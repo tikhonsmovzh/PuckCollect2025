@@ -7,27 +7,28 @@
 class IWire
 {
 public:
-    virtual void begin();
-    virtual void setClock(uint32_t);
-    virtual void beginTransmission(uint8_t) = 0;
-    virtual void endTransmission() = 0;
-    virtual void write(uint8_t) = 0;
-    virtual uint8_t read() = 0;
-    virtual void requestFrom(uint8_t, uint8_t) = 0;
-    virtual void readBytes(uint8_t *, size_t) = 0;
-    virtual uint16_t available() = 0;
+    virtual void begin() const;
+    virtual void setClock(uint32_t) const;
+    virtual void beginTransmission(uint8_t) const = 0;
+    virtual void endTransmission() const = 0;
+    virtual void write(uint8_t) const = 0;
+    virtual uint8_t read() const = 0;
+    virtual void requestFrom(uint8_t, uint8_t) const = 0;
+    virtual void readBytes(uint8_t *, size_t) const = 0;
+    virtual uint16_t available() const = 0;
 
-    void write8(uint8_t addr, uint8_t data)
+    void write8(uint8_t addr, uint8_t data) const
     {
         beginTransmission(addr);
         write(data);
         endTransmission();
     }
 
-    void write2x8(uint8_t addr, uint8_t data)
+    void write2x8(uint8_t addr, uint8_t data1, uint8_t data2) const
     {
         beginTransmission(addr);
-        write(data);
+        write(data1);
+        write(data2);
         endTransmission();
     }
 };
@@ -35,47 +36,47 @@ public:
 class HardwareWire : public IWire
 {
 public:
-    void begin()
+    void begin() const
     {
         Wire.begin();
     }
 
-    void setClock(uint32_t clock)
+    void setClock(uint32_t clock) const
     {
         Wire.setClock(clock);
     }
 
-    void beginTransmission(uint8_t addr)
+    void beginTransmission(uint8_t addr) const
     {
         Wire.beginTransmission(addr);
     }
 
-    void endTransmission()
+    void endTransmission() const
     {
         Wire.endTransmission();
     }
 
-    void write(uint8_t data)
+    void write(uint8_t data) const
     {
         Wire.write(data);
     }
 
-    uint8_t read()
+    uint8_t read() const
     {
         return Wire.read();
     }
 
-    void requestFrom(uint8_t addr, uint8_t count)
+    void requestFrom(uint8_t addr, uint8_t count) const
     {
         Wire.requestFrom(addr, count);
     }
 
-    void readBytes(uint8_t *buffer, size_t length)
+    void readBytes(uint8_t *buffer, size_t length) const
     {
         Wire.readBytes(buffer, length);
     }
 
-    uint16_t available()
+    uint16_t available() const
     {
         return Wire.available();
     }
@@ -91,47 +92,47 @@ public:
         _softWire = new SoftWire(sda, scl);
     }
 
-    void begin()
+    void begin() const
     {
         _softWire->begin();
     }
 
-    void setClock(uint32_t clock)
+    void setClock(uint32_t clock) const
     {
         _softWire->setClock(clock);
     }
 
-    void beginTransmission(uint8_t addr)
+    void beginTransmission(uint8_t addr) const
     {
         _softWire->beginTransmission(addr);
     }
 
-    void endTransmission()
+    void endTransmission() const
     {
         _softWire->endTransmission();
     }
 
-    void write(uint8_t data)
+    void write(uint8_t data) const
     {
         _softWire->write(data);
     }
 
-    uint8_t read()
+    uint8_t read() const
     {
         return _softWire->read();
     }
 
-    void requestFrom(uint8_t addr, uint8_t count)
+    void requestFrom(uint8_t addr, uint8_t count) const
     {
         _softWire->requestFrom(addr, count);
     }
 
-    void readBytes(uint8_t *buffer, size_t length)
+    void readBytes(uint8_t *buffer, size_t length) const
     {
         _softWire->readBytes(buffer, length);
     }
 
-    uint16_t available()
+    uint16_t available() const
     {
         return _softWire->available();
     }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include <Wire.h>
+#include "MultiWire.h"
 
 #define MOTOR_BRAKE_MOD 0x7D
 #define MOTOR_SET_POWER_C1 0x40
@@ -40,38 +40,38 @@ private:
     uint32_t _resetTime = 0;
 
 public:
-    DcExpansion(uint8_t addr): address(addr) {
+    DcExpansion(const uint8_t addr, const IWire *wir) : address(addr), wire(wir)
+    {
         _enabled = false;
     }
 
     const uint8_t address;
+    const IWire *wire;
 
-    void init(){
-        Wire.beginTransmission(address);
-        Wire.write(EXPANSION_RESET);
-        Wire.endTransmission();
+    void init()
+    {
+        wire->write8(address, EXPANSION_RESET);
 
         _resetTime = millis();
     }
 
-    void enable(){
-        if(_enabled)
+    void enable()
+    {
+        if (_enabled)
             return;
 
         while (millis() - _resetTime < EXPANSION_RESET_TIME);
-        
-        Wire.beginTransmission(address);
-        Wire.write(EXPANSION_ENABLE);
-        Wire.endTransmission();
+
+        wire->write8(address, EXPANSION_ENABLE);
 
         _enabled = true;
     }
 
-    bool isEnabled(){
+    bool isEnabled()
+    {
         return _enabled;
     }
 };
-
 
 class DcMotor
 {
@@ -92,8 +92,9 @@ public:
         _direction = direction;
     }
 
-    void init(){
-        if(!_expansion->isEnabled())
+    void init()
+    {
+        if (!_expansion->isEnabled())
             _expansion->enable();
 
         resetEncoder();
@@ -120,48 +121,28 @@ public:
         {
             _lastPower = intPower;
 
-            Wire.beginTransmission(_expansion->address);
-
-            if (_channel == 1)
-                Wire.write(MOTOR_SET_POWER_C1);
-            else
-                Wire.write(MOTOR_SET_POWER_C2);
-
-            Wire.write((uint8_t)intPower);
-            Wire.endTransmission();
+            _expansion->wire->write2x8(_expansion->address, _channel == 1 ? MOTOR_SET_POWER_C1 : MOTOR_SET_POWER_C2, (uint8_t)intPower);
         }
     }
 
-    float getCurrent(){
-        Wire.beginTransmission(_expansion->address);
+    float getCurrent()
+    {
+        _expansion->wire->write8(_expansion->address, _channel == 1 ? REQUEST_MOTOR_CURRENT_C1 : REQUEST_MOTOR_CURRENT_C2);
 
-        if(_channel == 1)
-            Wire.write(REQUEST_MOTOR_CURRENT_C1);
-        else
-            Wire.write(REQUEST_MOTOR_CURRENT_C2);
-
-        Wire.endTransmission();
-
-        Wire.requestFrom(_expansion->address, (uint8_t)2);
+        _expansion->wire->requestFrom(_expansion->address, (uint8_t)2);
         uint8_t buf[2];
-        Wire.readBytes(buf, 2);
+        _expansion->wire->readBytes(buf, 2);
 
         return ((int16_t)(buf[0] * 256 + buf[1]) * (_direction ? -1 : 1)) / 1000.0f;
     }
 
-    int32_t getCurrentPosition(){
-        Wire.beginTransmission(_expansion->address);
+    int32_t getCurrentPosition()
+    {
+        _expansion->wire->write8(_expansion->address, _channel == 1 ? REQUEST_MOTOR_POSITION_C1 : REQUEST_MOTOR_POSITION_C2);
 
-        if(_channel == 1)
-            Wire.write(REQUEST_MOTOR_POSITION_C1);
-        else
-            Wire.write(REQUEST_MOTOR_POSITION_C2);
-
-        Wire.endTransmission();
-
-        Wire.requestFrom(_expansion->address, (uint8_t)4);
+        _expansion->wire->requestFrom(_expansion->address, 4);
         uint8_t buf[4];
-        Wire.readBytes(buf, 4);
+        _expansion->wire->readBytes(buf, 4);
 
         uint32_t ticks = buf[0];
         ticks = (ticks * 256) + buf[1];
@@ -171,14 +152,8 @@ public:
         return (int32_t)(ticks) * (_direction ? -1 : 1);
     }
 
-    void resetEncoder(){
-        Wire.beginTransmission(_expansion->address);
-
-        if(_channel == 1)
-            Wire.write(MOTOR_POSITION_RESET_C1);
-        else
-            Wire.write(MOTOR_POSITION_RESET_C2);
-
-        Wire.endTransmission();
+    void resetEncoder()
+    {
+        _expansion->wire->write8(_expansion->address, _channel == 1 ? MOTOR_POSITION_RESET_C1 : MOTOR_POSITION_RESET_C2);
     }
 };

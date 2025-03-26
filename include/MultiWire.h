@@ -7,8 +7,8 @@
 class IWire
 {
 public:
-    virtual void begin() const;
-    virtual void setClock(uint32_t) const;
+    virtual void begin();
+    virtual void setClock(uint32_t);
     virtual void beginTransmission(uint8_t) const = 0;
     virtual void endTransmission() const = 0;
     virtual void write(uint8_t) const = 0;
@@ -36,12 +36,12 @@ public:
 class HardwareWire : public IWire
 {
 public:
-    void begin() const
+    void begin()
     {
         Wire.begin();
     }
 
-    void setClock(uint32_t clock) const
+    void setClock(uint32_t clock)
     {
         Wire.setClock(clock);
     }
@@ -92,12 +92,12 @@ public:
         _softWire = new SoftWire(sda, scl);
     }
 
-    void begin() const
+    void begin()
     {
         _softWire->begin();
     }
 
-    void setClock(uint32_t clock) const
+    void setClock(uint32_t clock)
     {
         _softWire->setClock(clock);
     }

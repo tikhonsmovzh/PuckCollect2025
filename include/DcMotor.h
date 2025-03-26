@@ -143,7 +143,7 @@ public:
         Wire.endTransmission();
 
         Wire.requestFrom(_expansion->address, (uint8_t)2);
-        byte buf[2];
+        uint8_t buf[2];
         Wire.readBytes(buf, 2);
 
         return ((int16_t)(buf[0] * 256 + buf[1]) * (_direction ? -1 : 1)) / 1000.0f;
@@ -160,7 +160,7 @@ public:
         Wire.endTransmission();
 
         Wire.requestFrom(_expansion->address, (uint8_t)4);
-        byte buf[4];
+        uint8_t buf[4];
         Wire.readBytes(buf, 4);
 
         uint32_t ticks = buf[0];

@@ -4,7 +4,7 @@
 
 class ElapseTime{
 private:
-    uint64_t _resetMicros = 0, ;
+    uint64_t _resetMicros = 0;
 public:
     ElapseTime(){
         _resetMicros = micros();
@@ -25,4 +25,4 @@ public:
     float seconds(){
         return micros() / 1000000.0f;
     }
-}
+};

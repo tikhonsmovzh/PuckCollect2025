@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "drivers/DcMotor.h"
 #include "drivers/MultiWire.h"
+#include "drivers/Gyro.h"
 
 HardwareWire hardwareWire;
 

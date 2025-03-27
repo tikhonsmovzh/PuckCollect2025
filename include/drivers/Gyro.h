@@ -46,7 +46,7 @@ float chopRadians(float val){
 enum AngleUnit{
     RADIANS = 0,
     DEGREES = 1
-}
+};
 
 struct Oriantation{
     float x, y, z;
@@ -62,7 +62,7 @@ struct Oriantation{
         y = 0;
         z = 0;
     }
-}
+};
 
 class BNO055Gyro
 {

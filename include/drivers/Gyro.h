@@ -21,6 +21,9 @@
 
 #define BNO055_REQUEST_ORIENTATION 0X1A
 
+#define BNO055_REQUEST_CHIP_ID 0x00
+#define BNO055_CHIP_ID 0xA0
+
 template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
@@ -93,6 +96,15 @@ public:
         _wire = wire;
         _address = address;
         _angleUnit = angleUnit;
+    }
+
+    bool isConnected(){
+        _wire->write8(_address, BNO055_REQUEST_CHIP_ID);
+
+        if(_wire->read() == BNO055_CHIP_ID)
+            return true;
+
+        return false;
     }
 
     void begin(){

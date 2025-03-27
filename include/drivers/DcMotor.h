@@ -48,7 +48,7 @@ public:
     const uint8_t address;
     const IWire *wire;
 
-    void init()
+    void begin()
     {
         wire->write8(address, EXPANSION_RESET);
 
@@ -92,7 +92,7 @@ public:
         _direction = direction;
     }
 
-    void init()
+    void begin()
     {
         if (!_expansion->isEnabled())
             _expansion->enable();

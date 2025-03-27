@@ -2,7 +2,7 @@
 #include "Devices.h"
 
 void setup() {
-  devicesInit();
+  devicesBegin();
 }
 
 void loop() {

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include "DcMotor.h"
-#include "MultiWire.h"
+#include "drivers/DcMotor.h"
+#include "drivers/MultiWire.h"
 
 HardwareWire hardwareWire;
 
@@ -14,15 +14,15 @@ DcMotor rightMotor(&dcExpansion1, 2);
 DcMotor brushMotor(&dcExpansion2, 1);
 DcMotor separatorMotor(&dcExpansion2, 2);
 
-void devicesInit(){
+void devicesBegin(){
     hardwareWire.begin();
     hardwareWire.setClock(400000);
 
-    dcExpansion1.init();
-    dcExpansion2.init();
+    dcExpansion1.begin();
+    dcExpansion2.begin();
 
-    leftMotor.init();
-    rightMotor.init();
-    brushMotor.init();
-    separatorMotor.init();
+    leftMotor.begin();
+    rightMotor.begin();
+    brushMotor.begin();
+    separatorMotor.begin();
 }

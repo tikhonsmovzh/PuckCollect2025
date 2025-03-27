@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include "MultiWire.h"
 
-#define DEFAULT_BNO055_ADDRESS 0x28 //0x29
+#define BNO055_ADDRESS 0x28 //0x29
 
 #define BNO055_CONFIG_MODE 0X00
 #define BNO055_OPERATION_MODE 0x0C
@@ -61,9 +61,9 @@ struct Oriantation{
     }
 
     Oriantation(){
-        x = 0;
-        y = 0;
-        z = 0;
+        x = 0.0f;
+        y = 0.0f;
+        z = 0.0f;
     }
 };
 
@@ -71,14 +71,13 @@ class BNO055Gyro
 {
 private:
     IWire *_wire;
-    uint8_t _address;
     AngleUnit _angleUnit;
     Oriantation _startOrientation;
 
     Oriantation getRawOrientation(){
-        _wire->write8(_address, BNO055_REQUEST_ORIENTATION);
+        _wire->write8(BNO055_ADDRESS, BNO055_REQUEST_ORIENTATION);
 
-        _wire->requestFrom(_address, 6);
+        _wire->requestFrom(BNO055_ADDRESS, 6);
         uint8_t buffer[6];
         _wire->readBytes(buffer, 6);
 
@@ -92,14 +91,13 @@ private:
     }
 
 public:
-    BNO055Gyro(IWire *wire, AngleUnit angleUnit = DEGREES, uint8_t address = DEFAULT_BNO055_ADDRESS){
+    BNO055Gyro(IWire *wire, AngleUnit angleUnit = DEGREES){
         _wire = wire;
-        _address = address;
         _angleUnit = angleUnit;
     }
 
     bool isConnected(){
-        _wire->write8(_address, BNO055_REQUEST_CHIP_ID);
+        _wire->write8(BNO055_ADDRESS, BNO055_REQUEST_CHIP_ID);
 
         if(_wire->read() == BNO055_CHIP_ID)
             return true;
@@ -111,7 +109,7 @@ public:
         uint8_t unitBit = (_angleUnit == RADIANS ? 1 : 0);
         uint8_t unitData = (1 << 7) | (0 << 4) | (unitBit << 2) | (unitBit << 1) | (0 << 0);
 
-        _wire->beginTransmission(_address);
+        _wire->beginTransmission(BNO055_ADDRESS);
         
         _wire->write(BNO055_MODE_SWAP);
         _wire->write(BNO055_CONFIG_MODE);

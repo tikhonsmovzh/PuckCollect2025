@@ -14,6 +14,8 @@
 #define TCS34725_ENABLE_AEN 0x02
 #define TCS34725_ENABLE_PON 0x01
 
+#define TCS34725_COMAND 0x80
+
 #define TCS34725_GAIN_1X 0x00
 #define TCS34725_GAIN_4X 0x01
 #define TCS34725_GAIN_16X 0x02
@@ -46,9 +48,9 @@
 
 struct Color
 {
-    uint16_t r, g, b;
+    uint16_t r, g, b, c;
 
-    Color(uint8_t r, uint8_t g, uint8_t b)
+    Color(uint16_t r, uint16_t g, uint16_t b, uint16_t c = 0)
     {
         this->r = r;
         this->g = g;
@@ -60,6 +62,7 @@ struct Color
         r = 0;
         g = 0;
         b = 0;
+        c = 0;
     }
 };
 
@@ -80,7 +83,7 @@ public:
 
     bool isConnected()
     {
-        _wire->write8(TCS34725_ADDRESS, REQUEST_TCS34725_ID);
+        _wire->write8(TCS34725_ADDRESS, TCS34725_COMAND | REQUEST_TCS34725_ID);
 
         uint8_t data = _wire->read();
 
@@ -94,7 +97,7 @@ public:
     {
         if (gain != _gain)
         {
-            _wire->write2x8(TCS34725_ADDRESS, TCS34725_SET_GAIN, gain);
+            _wire->write2x8(TCS34725_ADDRESS, TCS34725_COMAND | TCS34725_SET_GAIN, gain);
 
             _gain = gain;
         }
@@ -104,7 +107,7 @@ public:
     {
         if (integrationTime != _integrationTime)
         {
-            _wire->write2x8(TCS34725_ADDRESS, TCS34725_SET_INTEGRATIONTIME, integrationTime);
+            _wire->write2x8(TCS34725_ADDRESS, TCS34725_COMAND | TCS34725_SET_INTEGRATIONTIME, integrationTime);
 
             _integrationTime = integrationTime;
         }
@@ -114,44 +117,61 @@ public:
     {
         _wire->beginTransmission(TCS34725_ADDRESS);
 
-        _wire->write(TCS34725_SET_GAIN);
+        _wire->write(TCS34725_COMAND | TCS34725_SET_GAIN);
         _wire->write(_gain);
 
-        _wire->write(TCS34725_SET_INTEGRATIONTIME);
+        _wire->write(TCS34725_COMAND | TCS34725_SET_INTEGRATIONTIME);
         _wire->write(_integrationTime);
 
-        _wire->write(TCS34725_ENABLE);
+        _wire->write(TCS34725_COMAND | TCS34725_ENABLE);
         _wire->write(TCS34725_ENABLE_PON);
 
         _wire->endTransmission();
 
         delay(3);
 
-        _wire->write2x8(TCS34725_ADDRESS, TCS34725_ENABLE, TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN);
+        _wire->write2x8(TCS34725_ADDRESS, TCS34725_COMAND | TCS34725_ENABLE, TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN);
     }
 
-    Color readRGB(){
+    Color readRawRGB(){
         Color resultColor;
         uint8_t buffer[2];
 
-        _wire->write8(TCS34725_ADDRESS, TCS34725_GET_R);
+        _wire->write8(TCS34725_ADDRESS, TCS34725_COMAND | TCS34725_GET_R);
         _wire->requestFrom(TCS34725_ADDRESS, 2);
         _wire->readBytes(buffer, 2);
 
         resultColor.r = (uint16_t)(buffer[0]) | ((uint16_t)(buffer[1]) << 8);
         
-        _wire->write8(TCS34725_ADDRESS, TCS34725_GET_G);
+        _wire->write8(TCS34725_ADDRESS, TCS34725_COMAND | TCS34725_GET_G);
         _wire->requestFrom(TCS34725_ADDRESS, 2);
         _wire->readBytes(buffer, 2);
 
         resultColor.g = (uint16_t)(buffer[0]) | ((uint16_t)(buffer[1]) << 8);
         
-        _wire->write8(TCS34725_ADDRESS, TCS34725_GET_B);
+        _wire->write8(TCS34725_ADDRESS, TCS34725_COMAND | TCS34725_GET_B);
         _wire->requestFrom(TCS34725_ADDRESS, 2);
         _wire->readBytes(buffer, 2);
 
         resultColor.b = (uint16_t)(buffer[0]) | ((uint16_t)(buffer[1]) << 8);
 
+        _wire->write8(TCS34725_ADDRESS, TCS34725_COMAND | TCS34725_GET_C);
+        _wire->requestFrom(TCS34725_ADDRESS, 2);
+        _wire->readBytes(buffer, 2);
+
+        resultColor.c = (uint16_t)(buffer[0]) | ((uint16_t)(buffer[1]) << 8);
+
         return resultColor;
+    }
+
+    Color readRGB(){
+        Color raw = readRawRGB();
+
+        uint16_t c = raw.c;
+
+        if(c == 0)
+            return Color();
+
+        return Color((float)(raw.r) / c * 255, (float)(raw.g) / c * 255, (float)(raw.b) / c * 255);
     }
 };

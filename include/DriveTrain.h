@@ -2,6 +2,9 @@
 
 class Base{ // ну и хуйню понаписал XD
     private:
+    const float movementCoefficient = 0.5;
+    pair<DcMotor, DcMotor> Motors;
+    BNO055Gyro Gyroscop;
     Position _mainPosition = Position(); // почти все в еденицах измерения поля
 
     Field _mainField = Field();
@@ -10,10 +13,16 @@ class Base{ // ну и хуйню понаписал XD
         float dist = sqrt(pow(TargetPos.x - RobotPos.x, 2) + pow(TargetPos.y - RobotPos.y, 2));
         return dist;
     }
+
+    float getGlobalError(Position errorPos){
+        return (errorPos.x + errorPos.y + errorPos.z.x) / 3
+    }
     public:
 
     Base(pair<DcMotor, DcMotor> Motors, BNO055Gyro Gyroscop){ // сюда надо засунуть еще и датчики. Я буду калиброать робота что бы кататься по кругу с их помощью
         ResetPosition();
+        Motors = Motors;
+        Gyroscop = Gyroscop;
     }
 
     void ResetPosition(){
@@ -57,5 +66,13 @@ class Base{ // ну и хуйню понаписал XD
 
     void GoToTarget(Position targetPosition){
         Position errorPosition = Position();
+        errorPosition.pos(
+            targetPosition.x - _mainPosition.x, 
+            targetPosition.y - _mainPosition.y, 
+            targetPosition.z.x - _mainPosition.z.x
+        );
+        while(getGlobalerror(errorPosition)){
+
+        }
     }
 }

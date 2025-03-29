@@ -6,6 +6,7 @@
 #include "drivers/Gyro.h"
 #include "drivers/ColorSensor.h"
 #include "drivers/DistanceSensor.h"
+#include "drivers/Button.h"
 
 HardwareWire hardwareWire;
 SoftwareWire softwareWire(2, 3);
@@ -26,19 +27,14 @@ DistanceSensor forwardDistanceSensor(4, 5);
 DistanceSensor leftDistanceSensor(6, 7);
 DistanceSensor rightDistanceSensor(8, 9);
 
+Button startButton(10);
+
 void devicesBegin(){
     hardwareWire.begin();
     softwareWire.begin();
 
     dcExpansion2.begin();
     dcExpansion3.begin();
-    dcExpansion2.enable();
-    dcExpansion3.enable();
-
-    leftMotor.begin();
-    rightMotor.begin();
-    brushMotor.begin();
-    separatorMotor.begin();
 
     separatorColorSensor.begin();
     clampColorSenor.begin();
@@ -46,4 +42,11 @@ void devicesBegin(){
     forwardDistanceSensor.begin();
     leftDistanceSensor.begin();
     rightDistanceSensor.begin();
+
+    startButton.begin();
+
+    leftMotor.begin();
+    brushMotor.begin();
+    separatorMotor.begin();
+    rightMotor.begin();
 }

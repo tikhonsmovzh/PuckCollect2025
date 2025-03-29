@@ -6,33 +6,15 @@
 #include "drivers/Gyro.h"
 #include "drivers/ColorSensor.h"
 
-HardwareWire hardwareWire;
-
-DcExpansion dcExpansion1(2, &hardwareWire);
-DcExpansion dcExpansion2(3, &hardwareWire);
-
-DcMotor leftMotor(&dcExpansion1, 1);
-DcMotor rightMotor(&dcExpansion1, 2);
-DcMotor brushMotor(&dcExpansion2, 1);
-DcMotor separatorMotor(&dcExpansion2, 2);
-
-BNO055Gyro gyro(&hardwareWire);
-
-TCS34725ColorSensor colorSensor(&hardwareWire);
+HardwareWire hardwareWire = HardwareWire();
+DcExpansion dcExpansion2(2, &hardwareWire);
+DcExpansion dcexpansion3(3, &hardwareWire);
 
 void devicesBegin(){
     hardwareWire.begin();
-    hardwareWire.setClock(400000);
 
-    dcExpansion1.begin();
     dcExpansion2.begin();
-
-    leftMotor.begin();
-    rightMotor.begin();
-    brushMotor.begin();
-    separatorMotor.begin();
-
-    gyro.begin();
-    
-    colorSensor.begin();
+    dcexpansion3.begin();
+    dcExpansion2.enable();
+    dcexpansion3.enable();
 }

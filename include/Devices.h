@@ -5,6 +5,7 @@
 #include "drivers/MultiWire.h"
 #include "drivers/Gyro.h"
 #include "drivers/ColorSensor.h"
+#include "drivers/DistanceSensor.h"
 
 HardwareWire hardwareWire;
 SoftwareWire softwareWire(2, 3);
@@ -20,6 +21,10 @@ DcMotor separatorMotor(&dcExpansion3, 2);
 
 TCS34725ColorSensor separatorColorSensor(&hardwareWire);
 TCS34725ColorSensor clampColorSenor(&softwareWire);
+
+DistanceSensor forwardDistanceSensor(4, 5);
+DistanceSensor leftDistanceSensor(6, 7);
+DistanceSensor rightDistanceSensor(8, 9);
 
 void devicesBegin(){
     hardwareWire.begin();
@@ -37,4 +42,8 @@ void devicesBegin(){
 
     separatorColorSensor.begin();
     clampColorSenor.begin();
+
+    forwardDistanceSensor.begin();
+    leftDistanceSensor.begin();
+    rightDistanceSensor.begin();
 }

@@ -28,7 +28,7 @@ public:
         pinMode(_echoPin, INPUT);
     }
 
-    uint16_t getDistance(){
+    uint16_t readDistance(){
         if(millis() - _lastUpdateTimer > DISTANCE_SENSOR_UPDATE_TIME){
             digitalWrite(_triggerPin, 1);
             delayMicroseconds(ENABLE_TRIGER_TIMER);

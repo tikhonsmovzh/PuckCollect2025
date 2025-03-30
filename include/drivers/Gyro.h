@@ -133,9 +133,28 @@ public:
 
         _startOrientation = getRawOrientation();
     }
+    
+    void resetTo(Oriantation oriantation){
+        _startOrientation = getRawOrientation();
+        
+        _startOrientation.x += oriantation.x;
+        _startOrientation.y += oriantation.y;
+        _startOrientation.z += oriantation.z;
+
+        if(_angleUnit == RADIANS){
+            _startOrientation.x = chopRadians(_startOrientation.x);
+            _startOrientation.y = chopRadians(_startOrientation.y);
+            _startOrientation.z = chopRadians(_startOrientation.z);
+        }
+        else{
+            _startOrientation.x = chopDegrees(_startOrientation.x);
+            _startOrientation.y = chopDegrees(_startOrientation.y);
+            _startOrientation.z = chopDegrees(_startOrientation.z);
+        }
+    }
 
     void reset(){
-        _startOrientation = getRawOrientation();
+        resetTo(Oriantation());
     }
 
     Oriantation getOrientation(){

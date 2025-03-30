@@ -27,6 +27,8 @@ DistanceSensor forwardDistanceSensor(4, 5);
 DistanceSensor leftDistanceSensor(6, 7);
 DistanceSensor rightDistanceSensor(8, 9);
 
+BNO055Gyro gyro(&hardwareWire);
+
 Button startButton(10);
 
 void devicesBegin(){
@@ -44,6 +46,8 @@ void devicesBegin(){
     rightDistanceSensor.begin();
 
     startButton.begin();
+
+    gyro.begin();
 
     leftMotor.begin();
     brushMotor.begin();

@@ -82,6 +82,7 @@ class DcMotor
     bool _direction, _zeroPowerBehavior;
 
     int8_t _lastPower = 0;
+    float _lastFloatPower = 0.0f;
 
     float _maxPower = 1.0f;
 
@@ -103,18 +104,30 @@ public:
         resetEncoder();
     }
 
+    void setMaxPower(float maxPower){
+        _maxPower = maxPower;
+        
+        setPower(_lastFloatPower);
+    }
+
     void setZeroPowerBehavior(bool behavior)
     {
         _zeroPowerBehavior = behavior;
+        
+        setPower(_lastFloatPower);
     }
 
     void setDirection(bool direction)
     {
         _direction = direction;
+
+        setPower(_lastFloatPower);
     }
 
     void setPower(float power)
     {
+        _lastFloatPower = power;
+
         int8_t intMaxPower = 100 * _maxPower;
 
         int8_t intPower = min(intMaxPower, max(-intMaxPower, power * (_direction ? -100.0f : 100.0f)));

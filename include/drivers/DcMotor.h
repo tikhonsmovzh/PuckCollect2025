@@ -82,14 +82,18 @@ class DcMotor
     bool _direction, _zeroPowerBehavior;
 
     int8_t _lastPower = 0;
+    float _lastFloatPower = 0.0f;
+
+    float _maxPower = 1.0f;
 
 public:
-    DcMotor(DcExpansion *expansion, uint8_t channel, bool zeroPowerBehavior = true, bool direction = false)
+    DcMotor(DcExpansion *expansion, uint8_t channel, bool zeroPowerBehavior = true, bool direction = false, float maxPower = 1.0f)
     {
         _expansion = expansion;
         _channel = channel;
         _zeroPowerBehavior = zeroPowerBehavior;
         _direction = direction;
+        _maxPower = maxPower;
     }
 
     void begin()
@@ -100,19 +104,33 @@ public:
         resetEncoder();
     }
 
+    void setMaxPower(float maxPower){
+        _maxPower = maxPower;
+        
+        setPower(_lastFloatPower);
+    }
+
     void setZeroPowerBehavior(bool behavior)
     {
         _zeroPowerBehavior = behavior;
+        
+        setPower(_lastFloatPower);
     }
 
     void setDirection(bool direction)
     {
         _direction = direction;
+
+        setPower(_lastFloatPower);
     }
 
     void setPower(float power)
     {
-        int8_t intPower = min(100.0f, max(-100.0f, power * (_direction ? -100.0f : 100.0f)));
+        _lastFloatPower = power;
+
+        int8_t intMaxPower = 100 * _maxPower;
+
+        int8_t intPower = min(intMaxPower, max(-intMaxPower, power * (_direction ? -100.0f : 100.0f)));
 
         if (intPower == 0 && _zeroPowerBehavior)
             intPower = MOTOR_BRAKE_MOD;

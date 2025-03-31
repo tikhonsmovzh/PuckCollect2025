@@ -1,78 +1,68 @@
 #pragma once
 
-class Base{ // ну и хуйню понаписал XD
-    private:
-    const float movementCoefficient = 0.5;
-    pair<DcMotor, DcMotor> Motors;
-    BNO055Gyro Gyroscop;
-    Position _mainPosition = Position(); // почти все в еденицах измерения поля
+#include <Arduino.h>
+#include "Devices.h"
+#include "Configs.h"
 
-    Field _mainField = Field();
+struct Robot{
+    DcMotor *LeftWheel, *RightWheel;
+    BNO055Gyro *GyroSensor;
+    DistanceSensor *LeftDistSensor, *RightDistSensor, *ForwardDistSensor;
 
-    float getDistance(Position RobotPos, Position TargetPos){
-        float dist = sqrt(pow(TargetPos.x - RobotPos.x, 2) + pow(TargetPos.y - RobotPos.y, 2));
-        return dist;
+    init(DcMotor *LeftMotor,
+    DcMotor *RightMotor,
+    BNO055Gyro *GyroS,
+    DistanceSensor *LeftDistS,
+    DistanceSensor *RightDistS,
+    DistanceSensor *ForwardDistS){
+        LeftWheel = LeftMotor;
+        RightWheel = RightMotor;
+        GyroSensor = GyroS;
+        LeftDistSensor = LeftDistS;
+        RightDistSensor = RightDistS;
+        ForwardDistSensor = ForwardDistS;
+
+        RightWheel->setDirection(false); // надо будет переделать, когда робот будет (тих, пока что на тебе, тк у меня блютуз модуля нет :) )
     }
 
-    float getGlobalError(Position errorPos){
-        return (errorPos.x + errorPos.y + errorPos.z.x) / 3
-    }
-    public:
-
-    Base(pair<DcMotor, DcMotor> Motors, BNO055Gyro Gyroscop){ // сюда надо засунуть еще и датчики. Я буду калиброать робота что бы кататься по кругу с их помощью
-        ResetPosition();
-        Motors = Motors;
-        Gyroscop = Gyroscop;
+    MotorForward(float speed){
+        LeftWheel->setPower(speed);
+        RightWheel->setPower(speed);
     }
 
-    void ResetPosition(){
-        _mainPosition.pos(0f, 0f, Gyroscop.getOrientation());
+    MotorBackward(float speed){
+        LeftWheel->setPower(-speed);
+        RightWheel->setPower(-speed);
     }
 
-    /* определение глобальных координат
-                  |
-                  | ^
-                **| |
-    --------------- x (+)
-               <--y
-                 (+)
-    */
-
-    struct Position(float x, float y){ // да тих, я просто скопировал твой код. Все норм XD
-        float x, y; // еденицы измерения поля это еденица енкодера ***!
-        Oriantation z;
-        pos(float x, float y, Oriantation z){
-            this->x = x;
-            this->y = y;
-            this->z = z;
-        }
-
+    MotorTurnRight(float speed){
+        LeftWheel->setPower(speed);
+        RightWheel->setPower(-speed);
     }
 
-    struct Field(){
-        Position leftUp, leftDown, rightUp, rightDown;
-        letfUp = Position(1, 0); // потом свапним на замеры
-        leftDown = Position(0, 0);
-        rightUp = Position(1, 1);
-        rightDown = Psition(0, 1);
-    }
-    
-    // радиус будет в еденицах измеренния поля
-    void circleDrive(float Radius){ // это будет запускаться с центра стены после калибровки
-        const Position StartPosition = _mainPosition;
-        const Position CircleCenter = Position(_mainField.rightDown.y / 2, _mainField.leftUp.x / 2);
-        
+    MotorTurnLeft(float speed){
+        LeftWheel->setPower(-speed);
+        RightWheel->setPower(speed);
     }
 
-    void GoToTarget(Position targetPosition){
-        Position errorPosition = Position();
-        errorPosition.pos(
-            targetPosition.x - _mainPosition.x, 
-            targetPosition.y - _mainPosition.y, 
-            targetPosition.z.x - _mainPosition.z.x
-        );
-        while(getGlobalerror(errorPosition)){
+    FreeMotorControl(float speedRight, float speedLeft){
+        LeftWheel->setPower(speedLeft);
+        RightWheel->setPower(speedRight);
+    }
 
-        }
+    RideDistanceForward(float steps, float speed){
+        RightWheel->resetEncoder();
+        LeftWheel->resetEncoder();
+        MotorForward(speed);
+        while (RightWheel->getCurrentPosition() + LeftWheel->getCurrentPosition() < steps * SINGLE_ENCODER_STEP * 2);
+    }
+};
+
+void DiagonalTravel(Robot MyLimbs){
+    MyLimbs.MotorForward(0.5f);
+    if (IS_DISTANCE_SENSOR){
+        while(MyLimbs.ForwardDistSensor->readDistance() > 10);
+    }else{
+        MyLimbs.RideDistanceForward(5, 0.5);  // пока что так, потом помереем *5 - это полных оборотов колес
     }
 }

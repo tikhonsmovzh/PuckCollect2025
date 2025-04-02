@@ -15,12 +15,13 @@ private:
     uint8_t _triggerPin, _echoPin;
     uint32_t _lastUpdateTimer = 0;
     
-    uint16_t _lastDistance = 0;
+    uint16_t _lastDistance = 0, _minimumDistance = 0;
 
 public:
-    DistanceSensor(uint8_t triggerPin, uint8_t echoPin){
+    DistanceSensor(uint8_t triggerPin, uint8_t echoPin, uint16_t minimumDistance){
         _triggerPin = triggerPin;
         _echoPin = echoPin;
+        _minimumDistance = minimumDistance;
     }
 
     void begin(){
@@ -40,6 +41,11 @@ public:
 
             if(distance > MAX_DISTANCE)
                 distance = MAX_DISTANCE;
+
+            if(distance < _minimumDistance)
+                distance = 0;
+            else
+                distance -= _minimumDistance;
 
             _lastUpdateTimer = millis();
 

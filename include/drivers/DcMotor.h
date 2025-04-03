@@ -86,6 +86,24 @@ class DcMotor
 
     float _maxPower = 1.0f;
 
+    int32_t _encoderResetPos = 0;
+
+    int32_t getRawCurrentPosition()
+    {
+        _expansion->wire->write8(_expansion->address, _channel == 1 ? REQUEST_MOTOR_POSITION_C1 : REQUEST_MOTOR_POSITION_C2);
+
+        _expansion->wire->requestFrom(_expansion->address, 4);
+        uint8_t buf[4];
+        _expansion->wire->readBytes(buf, 4);
+
+        uint32_t ticks = buf[0];
+        ticks = (ticks * 256) + buf[1];
+        ticks = (ticks * 256) + buf[2];
+        ticks = (ticks * 256) + buf[3];
+
+        return (int32_t)(ticks) * (_direction ? -1 : 1);
+    }
+
 public:
     DcMotor(DcExpansion *expansion, uint8_t channel, bool zeroPowerBehavior = true, bool direction = false, float maxPower = 1.0f)
     {
@@ -124,6 +142,10 @@ public:
         setPower(_lastFloatPower);
     }
 
+    float getPower(){
+        return _lastFloatPower;
+    }
+
     void setPower(float power)
     {
         _lastFloatPower = power;
@@ -154,24 +176,18 @@ public:
         return ((int16_t)(buf[0] * 256 + buf[1]) * (_direction ? -1 : 1)) / 1000.0f;
     }
 
-    int32_t getCurrentPosition()
-    {
-        _expansion->wire->write8(_expansion->address, _channel == 1 ? REQUEST_MOTOR_POSITION_C1 : REQUEST_MOTOR_POSITION_C2);
-
-        _expansion->wire->requestFrom(_expansion->address, 4);
-        uint8_t buf[4];
-        _expansion->wire->readBytes(buf, 4);
-
-        uint32_t ticks = buf[0];
-        ticks = (ticks * 256) + buf[1];
-        ticks = (ticks * 256) + buf[2];
-        ticks = (ticks * 256) + buf[3];
-
-        return (int32_t)(ticks) * (_direction ? -1 : 1);
+    int32_t getCurrentPosition(){
+        return getRawCurrentPosition() - _encoderResetPos;
     }
 
     void resetEncoder()
     {
         _expansion->wire->write8(_expansion->address, _channel == 1 ? MOTOR_POSITION_RESET_C1 : MOTOR_POSITION_RESET_C2);
+
+        _encoderResetPos = 0;
+    }
+
+    void softwareEncoderReset(){
+        _encoderResetPos = getRawCurrentPosition();
     }
 };

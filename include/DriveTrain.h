@@ -37,6 +37,7 @@ struct Robot{
 
 enum Steps{
     Diagonal,
+    DiagonalRide,
     Funnel,
     Base
 };
@@ -84,8 +85,19 @@ public:
             }
             break;
 
-        case Funnel:
+        case DiagonalRide:
+            if (mainRobot->ForwardDistSensor->readDistance() > SIDE_DISTANCE){
+                if (junkValues == 1.0f){
+                    mainRobot->Drive(ROBOT_SPEED, 0.0f);
+                    junkValues = 0.0f;
+                }
+            }else{
+                mainRobot->Drive(0.0f, 0.0f);
+                DriveSteps = Funnel;
+            }
             break;
+        
+        case Funnel:
 
         case Base:
             break;

@@ -17,6 +17,16 @@ void setup() {
 
   devicesBegin();
 
+  Robot robotConfig = Robot(
+    leftMotor, 
+    rightMotor,
+    gyro,
+    leftDistanceSensor,
+    rightDistanceSensor,
+    forwardDistanceSensor); // тих, втащи потом за кривость кода, но поеа что так тк фактически, пишу на плюсах впервые, сори >_<
+
+  Driver driveOperator = Driver(robotConfig);
+
   while (!startButton.readState());
   while (startButton.readState());
   

@@ -7,6 +7,7 @@
 #include "drivers/ColorSensor.h"
 #include "drivers/DistanceSensor.h"
 #include "drivers/Button.h"
+#include <Servo.h>
 
 HardwareWire hardwareWire;
 SoftwareWire softwareWire(2, 3);
@@ -31,7 +32,11 @@ BNO055Gyro gyro(&hardwareWire);
 
 Button startButton(10);
 
+Servo clampServo;
+
 void devicesBegin(){
+    clampServo.attach(11);
+
     hardwareWire.begin();
     softwareWire.begin();
 

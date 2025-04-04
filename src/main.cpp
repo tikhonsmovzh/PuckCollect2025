@@ -15,8 +15,8 @@ void setup() {
   while (!startButton.readState());
   while (startButton.readState());
 }
-
-Driver robot;
+PDRegulator PDreg(1.0f, 1.0f);
+Driver robot(PDreg);
 
 void loop() {
   robot.update();

@@ -5,15 +5,13 @@
 #include "Configs.h"
 #include "utils/PDRegulator.h"
 
-
-
 enum Steps{
     Diagonal,
     Funnel,
     Base
 };
 
-class Driver{
+class DriveTrain{
 private:
     float GetOriantation(){
         return gyro.getOrientation().x; // надо будет свапнуть х на то что будет
@@ -27,14 +25,22 @@ private:
     Steps DriveSteps;
     float speedK = 1.0f;
     PDRegulator *PDreg;
-    static int junkValuesI;
-    static float junkValuesF, errValue; // почему то, ни одна моя прога без них не обходится 0_о
+    int junkValuesI;
+    float junkValuesF, errValue; // почему то, ни одна моя прога без них не обходится 0_о
 public:
-    Driver(PDRegulator& PDr){
+    DriveTrain(PDRegulator& PDr){
         DriveSteps = Diagonal;
         junkValuesF = 0.0f;
         junkValuesI = 2;
         PDreg = &PDr;
+    }
+
+    void begin(){
+
+    }
+
+    void start(){
+
     }
 
     void update(){
@@ -70,3 +76,6 @@ public:
         }
     }
 };
+
+PDRegulator PDreg(1.0f, 1.0f);
+DriveTrain driveTrain(PDreg);

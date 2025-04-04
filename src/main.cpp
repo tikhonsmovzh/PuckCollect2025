@@ -6,6 +6,7 @@ void setup() {
   Serial.begin(115200);
 
   devicesBegin();
+  driveTrain.begin();
 
   while (!startButton.readState());
   while (startButton.readState());
@@ -14,10 +15,10 @@ void setup() {
   
   while (!startButton.readState());
   while (startButton.readState());
+
+  driveTrain.start();
 }
-PDRegulator PDreg(1.0f, 1.0f);
-Driver robot(PDreg);
 
 void loop() {
-  robot.update();
+  driveTrain.update();
 }

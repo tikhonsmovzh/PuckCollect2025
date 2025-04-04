@@ -2,16 +2,6 @@
 #include "Devices.h"
 #include "DriveTrain.h"
 
-Robot robotConfig = Robot(
-  leftMotor, 
-  rightMotor,
-  gyro,
-  leftDistanceSensor,
-  rightDistanceSensor,
-  forwardDistanceSensor); // тих, втащи потом за кривость кода, но поеа что так тк фактически, пишу на плюсах впервые, сори >_<
-
-Driver driveOperator(robotConfig);
-
 void setup() {
   Serial.begin(115200);
 
@@ -26,6 +16,8 @@ void setup() {
   while (startButton.readState());
 }
 
+Driver robot;
+
 void loop() {
-  driveOperator.update();
+  robot.update();
 }

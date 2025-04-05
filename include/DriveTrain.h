@@ -26,7 +26,7 @@ enum BaseSteps{
 
 enum RandomSteps{
     GenerateAngle,
-    Turn,
+    TurnRAng,
     DriveToWall
 };
 
@@ -48,6 +48,7 @@ private:
     Steps DriveSteps;
     FunnelSteps FunnelStep;
     BaseSteps BaseStep;
+    RandomSteps RandomStep;
     PDRegulator *PDreg;
     uint8_t StepsCount;
     float errValue, randomAngle; // почему то, ни одна моя прога без них не обходится 0_о
@@ -56,6 +57,7 @@ public:
         DriveSteps = Diagonal;
         FunnelStep = WallRide;
         BaseStep = TurnMinusNinety;
+        RandomStep = GenerateAngle;
         PDreg = &PDr;
         StepsCount = 1;
         randomAngle = 1.0f;
@@ -160,7 +162,7 @@ public:
             break;
 
         case RandomRide:
-            switch ()
+            switch (RandomStep)
             {
             case GenerateAngle:
                 randomAngle = randomFloat(-180.0, 180.0);
@@ -176,13 +178,18 @@ public:
                 }
                 }else{
                     Drive(0.0f, -ROBOT_SPEED);
-                    if((leftMotor.getCurrentPosition() + rightMotor.getCurrentPosition()) / 2){
-
+                    if((leftMotor.getCurrentPosition() + rightMotor.getCurrentPosition()) / 2 < abs(randomAngle)){
+                        Drive(0.0f, ROBOT_SPEED);
                     }
                 }
                 break;
             
             case DriveToWall:
+                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
+                    Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
+                }else{
+                    DriveSteps = RandomRide;
+                }
                 break;
             }
             break;

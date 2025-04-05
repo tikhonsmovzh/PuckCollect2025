@@ -70,4 +70,26 @@ void intakeUpdate()
     int32_t separatorErr = _targetSeparatorPos - separatorMotor.getCurrentPosition();
 
     separatorMotor.setPower(_separatorRegulator.update(separatorErr));
+
+    if (abs(separatorErr) < SEPARATOR_SENS && puckColor != WHITE)
+    {
+        if (puckColor == ourColor)
+            _targetSeparatorPos += SEPARATOR_MOTOR_STEP;
+        else
+            _targetSeparatorPos -= SEPARATOR_MOTOR_STEP;
+    }
+
+    if (floorColor == ourColor)
+    {
+        if (_clampTimer.seconds() > CLAMP_OPEN_TIMER)
+            clampServo.write(CLAMP_SERVO_UNCLAMP_POS);
+        else
+            clampServo.write(CLAMP_SERVO_CALMP_POS);
+    }
+    else
+    {
+        _clampTimer.reset();
+
+        clampServo.write(CLAMP_SERVO_CALMP_POS);
+    }
 }

@@ -41,7 +41,7 @@ private:
         rightMotor.setPower(forward - turn);
     }
 
-    float random_float(float min, float max) { // это из инета
+    float randomFloat(float min, float max) { // это из инета
         return ((float)rand() / RAND_MAX) * (max - min) + min;
     }
 
@@ -50,7 +50,7 @@ private:
     BaseSteps BaseStep;
     PDRegulator *PDreg;
     int StepsCount;
-    float errValue; // почему то, ни одна моя прога без них не обходится 0_о
+    float errValue, randomAngle; // почему то, ни одна моя прога без них не обходится 0_о
 public:
     DriveTrain(PDRegulator& PDr){
         DriveSteps = Diagonal;
@@ -58,6 +58,7 @@ public:
         BaseStep = TurnMinusNinety;
         PDreg = &PDr;
         StepsCount = 1;
+        randomAngle = 1.0f;
         leftMotor.resetEncoder();
         rightMotor.resetEncoder();
     }
@@ -159,10 +160,23 @@ public:
             switch ()
             {
             case GenerateAngle:
-                
+                randomAngle = randomFloat(-180.0, 180.0);
+                leftMotor.softwareEncoderReset();
+                rightMotor.softwareEncoderReset();
                 break;
             
             case Turn:
+                if (IS_GYRO){
+                    Drive(0.0f, randomAngle - gyro.getOrientation().x);
+                    if (abs(randomAngle - gyro.getOrientation().x) < ANGLE_ERROR){
+                        BaseStep = RightDrive;
+                }
+                }else{
+                    Drive(0.0f, -ROBOT_SPEED);
+                    if((leftMotor.getCurrentPosition() + rightMotor.getCurrentPosition()) / 2){
+
+                    }
+                }
                 break;
             
             case DriveToWall:

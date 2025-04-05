@@ -17,6 +17,13 @@ enum FunnelSteps{
     Turn
 };
 
+enum BaseSteps{
+    TurnMinusNinety,
+    RightDrive,
+    TurnZero,
+    DownDrive
+};
+
 class DriveTrain{
 private:
     float GetOriantation(){
@@ -34,6 +41,7 @@ private:
 
     Steps DriveSteps;
     FunnelSteps FunnelStep;
+    BaseSteps BaseStep;
     PDRegulator *PDreg;
     int StepsCount;
     float errValue; // почему то, ни одна моя прога без них не обходится 0_о
@@ -41,6 +49,7 @@ public:
     DriveTrain(PDRegulator& PDr){
         DriveSteps = Diagonal;
         FunnelStep = WallRide;
+        BaseStep = TurnMinusNinety;
         PDreg = &PDr;
         StepsCount = 1;
         leftMotor.resetEncoder();
@@ -77,6 +86,9 @@ public:
                     leftMotor.resetEncoder();
                     StepsCount++;
                 }
+                if (abs(leftDistanceSensor.readDistance() - rightDistanceSensor.readDistance()) < 70.0f){
+                    DriveSteps = Base;
+                }
                 break;
             
             case Turn:
@@ -99,6 +111,38 @@ public:
             break;
 
         case Base:
+            switch (BaseStep)
+            {
+            case TurnMinusNinety:
+                Drive(0.0f, -90.0 - gyro.getOrientation().x);
+                if (abs(-90.0f - gyro.getOrientation().x) < ANGLE_ERROR){
+                    BaseStep = RightDrive;
+                }
+                break;
+            
+            case RightDrive:
+                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
+                    Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
+                }else{
+                    BaseStep = TurnZero;
+                }
+                break;
+            
+            case TurnZero:
+                Drive(0.0f, - gyro.getOrientation().x);
+                if (abs(gyro.getOrientation().x) < ANGLE_ERROR){
+                    BaseStep = DownDrive;
+                }
+                break;
+            
+            case DownDrive:
+                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
+                    Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
+                }else{
+                    BaseStep = TurnZero;
+                }
+                break;
+            }
             break;
 
         case RandomRide:

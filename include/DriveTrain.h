@@ -12,6 +12,11 @@ enum Steps{
     RandomRide
 };
 
+enum FunnelSteps{
+    WallRide,
+    Turn
+};
+
 class DriveTrain{
 private:
     float GetOriantation(){
@@ -28,16 +33,16 @@ private:
     }
 
     Steps DriveSteps;
-    float speedK = 1.0f;
+    FunnelSteps FunnelStep;
     PDRegulator *PDreg;
-    int junkValuesI;
-    float junkValuesF, errValue; // почему то, ни одна моя прога без них не обходится 0_о
+    int StepsCount;
+    float errValue; // почему то, ни одна моя прога без них не обходится 0_о
 public:
     DriveTrain(PDRegulator& PDr){
         DriveSteps = Diagonal;
-        junkValuesF = 0.0f;
-        junkValuesI = 2;
+        FunnelStep = WallRide;
         PDreg = &PDr;
+        StepsCount = 1;
     }
 
     void begin(){
@@ -51,97 +56,50 @@ public:
     void update(){
         switch (DriveSteps){
         case Diagonal:
-            if (forwardDistanceSensor.readDistance() > SIDE_DISTANCE){
-                if (junkValuesI == 2){
-                    Drive(ROBOT_SPEED, 0.0f);
-                    junkValuesI = 1;
-                }
+            if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
+                Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
             }else{
-                Drive(0.0f, 0.0f);
                 DriveSteps = Funnel;
             }
             break;
         
         case Funnel:
-            errValue = rightDistanceSensor.readDistance() - ETALON_SIDE_DISTANCE * junkValuesF;
-            Drive(ROBOT_SPEED, (PDreg->update(errValue) * speedK) - junkValuesI);
-
-            junkValuesF += 0.5f;
-
-            if (forwardDistanceSensor.readDistance() < SIDE_DISTANCE){
-                junkValuesI = 1;
-            }else{
-                junkValuesI = 0;
+            switch (FunnelStep)
+            {
+            case WallRide:
+                errValue = rightDistanceSensor.readDistance() - ETALON_DISTANCE * StepsCount;
+                Drive(ROBOT_SPEED, PDreg->update(errValue));
+                if (forwardDistanceSensor.readDistance() < ETALON_DISTANCE * StepsCount){
+                    FunnelStep = Turn;
+                    rightMotor.resetEncoder();
+                    leftMotor.resetEncoder();
+                    StepsCount++;
+                }
+                break;
+            
+            case Turn:
+                if (IS_GYRO){
+                    if (abs(abs(chopDegrees(90 * StepsCount)) - abs(gyro.getOrientation().x)) > ANGLE_ERROR){
+                        Drive(0.0f, -ROBOT_SPEED);
+                    }
+                }else{
+                    if (forwardDistanceSensor.readDistance() < ETALON_DISTANCE * StepsCount){
+                        Drive(0.0f, -ROBOT_SPEED);
+                    }
+                }
+                break;
             }
-            if (abs(rightDistanceSensor.readDistance() - leftDistanceSensor.readDistance()) < 70.0f){
-                DriveSteps = Base;
-                junkValuesI = 0;
-            }
+            
             break;
 
         case Base:
-            if (IS_GYRO){ // здесь junkValueI это своеобразный рычаг (здесь он точно нужен)
-                if (junkValuesI == 0){
-                    if (abs(240 - gyro.getOrientation().x) > ANGLE_ERROR){
-                        Drive(0.0f, ROBOT_SPEED);
-                    }else{
-                        junkValuesI = 1;
-                    }
-                }
-                if (junkValuesI == 1){
-                    if (forwardDistanceSensor.readDistance() > SIDE_DISTANCE){
-                        Drive(ROBOT_SPEED, 0.0f);
-                    }else{
-                        junkValuesI = 2;
-                    }
-                }
-                if(junkValuesI == 2){
-                    if (abs(180 - gyro.getOrientation().x) > ANGLE_ERROR){
-                        Drive(0.0f, ROBOT_SPEED);
-                    }else{
-                        junkValuesI = 3;
-                    }
-                }
-                if (junkValuesI == 3){
-                    if (forwardDistanceSensor.readDistance() > SIDE_DISTANCE){
-                        Drive(ROBOT_SPEED, 0.0f);
-                    }else{
-                        DriveSteps = RandomRide;
-                        junkValuesI = 1;
-                    }
-                }
-            }else{
-                DriveSteps = RandomRide;
-                junkValuesI = 1;
-            }
             break;
 
         case RandomRide:
-            if (junkValuesI == 1){
-                junkValuesI = 0;
-                rightMotor.softwareEncoderReset();
-                leftMotor.softwareEncoderReset();
-                junkValuesF = random_float(0.1f, 20.0f);
-            }
-            if (junkValuesI == 0){
-                if (abs(SINGLE_ENCODER_STEP - (rightMotor.getCurrentPosition() + leftMotor.getCurrentPosition()) / 2) > ANGLE_ERROR){
-                    Drive(0.0f, -ROBOT_SPEED);
-                }else{
-                    junkValuesI = 2;
-                }
-            }
-            if (junkValuesI == 2){
-                if (forwardDistanceSensor.readDistance() > SIDE_DISTANCE){
-                    Drive(ROBOT_SPEED, 0.0f;);
-                }
-                else{
-                    junkValuesI = 1;
-                }
-            }
             break;
         }
     }
 };
 
-PDRegulator PDreg(1.0f, 1.0f);
+PDRegulator PDreg(0.1f, 0.1f);
 DriveTrain driveTrain(PDreg);

@@ -33,9 +33,13 @@ BNO055Gyro gyro(&hardwareWire);
 Button startButton(10);
 
 Servo clampServo;
+Servo brushServoLeft, brushServoRight;
 
 void devicesBegin(){
     clampServo.attach(11);
+
+    brushServoLeft.attach(12);
+    brushServoRight.attach(13);
 
     hardwareWire.begin();
     softwareWire.begin();

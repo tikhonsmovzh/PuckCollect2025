@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include "MultiWire.h"
+#include "utils/Sgn.h"
 
 #define BNO055_ADDRESS 0x28 //0x29
 
@@ -23,10 +24,6 @@
 
 #define BNO055_REQUEST_CHIP_ID 0x00
 #define BNO055_CHIP_ID 0xA0
-
-template <typename T> int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-}
  
 float chopDegrees(float val){
     float chopedVal = val;

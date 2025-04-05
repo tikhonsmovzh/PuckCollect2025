@@ -5,6 +5,7 @@
 #include "Configs.h"
 #include "utils/PDRegulator.h"
 #include "utils/ElapsedTime.h"
+#include "utils/Sgn.h"
 
 PDRegulator _separatorRegulator(SEPARATOR_P, SEPARATOR_D);
 int32_t _targetSeparatorPos = 0;
@@ -18,24 +19,28 @@ enum ColorType
 
 ColorType floorColor = WHITE, puckColor = WHITE, ourColor = RED;
 
-ElapseTime _clampTimer;
+ElapseTime _clampTimer, _separartorDefendTimer;
 
 void intakeBegin()
 {
     separatorMotor.setMaxPower(SEPARATOR_MAX_POWER);
+
+    brushServoLeft.write(90);
+    brushServoRight.write(90);
+
+    brushMotor.setPower(0.0);
 }
 
 void intakeStart()
 {
     clampServo.write(CLAMP_SERVO_CALMP_POS);
-    _regulator.start();
+    _separatorRegulator.start();
     _clampTimer.reset();
-}
+    _separartorDefendTimer.reset();
 
-void detectFloor()
-{
-    updateColorSensors();
-    ourColor = floorColor;
+    brushServoLeft.write(90 + BRUSH_SERVO_SPEED);
+    brushServoRight.write(90 - BRUSH_SERVO_SPEED);
+    brushMotor.setPower(BRUSH_MOTOR_POWER);
 }
 
 void updateColorSensors()
@@ -63,11 +68,26 @@ void updateColorSensors()
     }
 }
 
+void detectFloor()
+{
+    updateColorSensors();
+    ourColor = floorColor;
+}
+
 void intakeUpdate()
 {
     updateColorSensors();
 
     int32_t separatorErr = _targetSeparatorPos - separatorMotor.getCurrentPosition();
+
+    if(abs(separatorErr) > SEPARATOR_SENS){
+        if(_separartorDefendTimer.seconds() > BRUSH_DEFEND_TIMER){
+            _targetSeparatorPos -= sgn(separatorErr) * SEPARATOR_MOTOR_STEP;
+            _separartorDefendTimer.reset();
+        }
+    }
+    else
+        _separartorDefendTimer.reset();
 
     separatorMotor.setPower(_separatorRegulator.update(separatorErr));
 

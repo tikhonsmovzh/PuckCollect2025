@@ -5,43 +5,51 @@
 #include "Configs.h"
 #include "utils/PDRegulator.h"
 
-enum Steps{
+enum Steps
+{
     Diagonal,
     Funnel,
     Base,
     RandomRide
 };
 
-enum FunnelSteps{
+enum FunnelSteps
+{
     WallRide,
     Turn
 };
 
-enum BaseSteps{
+enum BaseSteps
+{
     TurnMinusNinety,
     RightDrive,
     TurnZero,
     DownDrive
 };
 
-enum RandomSteps{
+enum RandomSteps
+{
     GenerateAngle,
     TurnRAng,
     DriveToWall
 };
 
-class DriveTrain{
+class DriveTrain
+{
 private:
-    float GetOriantation(){
+    float GetOriantation()
+    {
         return gyro.getOrientation().x; // надо будет свапнуть х на то что будет
     }
 
-    void Drive(float forward, float turn){
+    void Drive(float forward, float turn)
+    {
         leftMotor.setPower(forward + turn); // спасибо тежан :)
         rightMotor.setPower(forward - turn);
     }
 
-    float randomFloat(float min, float max) { // это из инета
+    float randomFloat(float min, float max)
+    { // это из инета
         return ((float)rand() / RAND_MAX) * (max - min) + min;
     }
 
@@ -53,7 +61,8 @@ private:
     uint8_t StepsCount;
     float errValue, randomAngle; // почему то, ни одна моя прога без них не обходится 0_о
 public:
-    DriveTrain(PDRegulator& PDr){
+    DriveTrain(PDRegulator &PDr)
+    {
         DriveSteps = Diagonal;
         FunnelStep = WallRide;
         BaseStep = TurnMinusNinety;
@@ -65,62 +74,79 @@ public:
         rightMotor.resetEncoder();
     }
 
-    void begin(){
-
+    void begin()
+    {
     }
 
-    void start(){
-
+    void start()
+    {
     }
 
-    void update(){
-        switch (DriveSteps){
+    void update()
+    {
+        switch (DriveSteps)
+        {
         case Diagonal:
-            if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
+            if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE)
+            {
                 Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
-            }else{
+            }
+            else
+            {
                 DriveSteps = Funnel;
             }
             break;
-        
+
         case Funnel:
             switch (FunnelStep)
             {
             case WallRide:
                 errValue = rightDistanceSensor.readDistance() - ETALON_DISTANCE * StepsCount;
                 Drive(ROBOT_SPEED, PDreg->update(errValue));
-                if (forwardDistanceSensor.readDistance() < ETALON_DISTANCE * StepsCount){
+                if (forwardDistanceSensor.readDistance() < ETALON_DISTANCE * StepsCount)
+                {
                     FunnelStep = Turn;
                     rightMotor.resetEncoder();
                     leftMotor.resetEncoder();
                     StepsCount++;
                 }
-                if (StepsCount > BASE_STEP_COUNT){
+                if (StepsCount > BASE_STEP_COUNT)
+                {
                     DriveSteps = Base;
                 }
                 break;
-            
+
             case Turn:
-                if (IS_GYRO){
-                    if (abs(chopDegrees(chopDegrees(90 * StepsCount) - gyro.getOrientation().x)) > ANGLE_ERROR){
+                if (IS_GYRO)
+                {
+                    if (abs(chopDegrees(chopDegrees(90 * StepsCount) - gyro.getOrientation().x)) > ANGLE_ERROR)
+                    {
                         Drive(0.0f, -ROBOT_SPEED);
-                    }else{
+                    }
+                    else
+                    {
                         FunnelStep = WallRide;
                     }
-                }else{
-                    if (forwardDistanceSensor.readDistance() < ETALON_DISTANCE * StepsCount){
+                }
+                else
+                {
+                    if (forwardDistanceSensor.readDistance() < ETALON_DISTANCE * StepsCount)
+                    {
                         Drive(0.0f, -ROBOT_SPEED);
-                    }else{
+                    }
+                    else
+                    {
                         FunnelStep = WallRide;
                     }
                 }
                 break;
             }
-            
+
             break;
 
         case Base:
-            if (!IS_GYRO){
+            if (!IS_GYRO)
+            {
                 DriveSteps = RandomRide;
                 break;
             }
@@ -128,33 +154,41 @@ public:
             {
             case TurnMinusNinety:
                 Drive(0.0f, chopDegrees(-90.0 - gyro.getOrientation().x));
-                if (abs(chopDegrees(-90.0f - gyro.getOrientation().x)) < ANGLE_ERROR){
+                if (abs(chopDegrees(-90.0f - gyro.getOrientation().x)) < ANGLE_ERROR)
+                {
                     BaseStep = RightDrive;
                 }
                 break;
-            
+
             case RightDrive:
-                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
+                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE)
+                {
                     Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
-                }else{
+                }
+                else
+                {
                     BaseStep = TurnZero;
                 }
                 break;
-            
+
             case TurnZero:
-                Drive(0.0f, - gyro.getOrientation().x);
-                if (abs(gyro.getOrientation().x) < ANGLE_ERROR){
+                Drive(0.0f, -gyro.getOrientation().x);
+                if (abs(gyro.getOrientation().x) < ANGLE_ERROR)
+                {
                     BaseStep = DownDrive;
 
                     rightMotor.resetEncoder();
                     leftMotor.resetEncoder();
                 }
                 break;
-            
+
             case DownDrive:
-                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
+                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE)
+                {
                     Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
-                }else{
+                }
+                else
+                {
                     DriveSteps = RandomRide;
                 }
                 break;
@@ -169,26 +203,46 @@ public:
                 leftMotor.softwareEncoderReset();
                 rightMotor.softwareEncoderReset();
                 break;
-            
+
             case Turn:
-                if (IS_GYRO){
-                    Drive(0.0f, randomAngle - gyro.getOrientation().x);
-                    if (abs(randomAngle - gyro.getOrientation().x) < ANGLE_ERROR){
-                        BaseStep = RightDrive;
+                if (IS_GYRO)
+                {
+                    Drive(0.0f, chopDegrees(randomAngle - gyro.getOrientation().x));
+                    if (abs(chopDegrees(randomAngle - gyro.getOrientation().x)) < ANGLE_ERROR)
+                    {
+                        RandomStep = DriveToWall;
+                        rightMotor.resetEncoder();
+                        leftMotor.resetEncoder();
+                    }
                 }
-                }else{
+                else
+                {
                     Drive(0.0f, -ROBOT_SPEED);
-                    if((leftMotor.getCurrentPosition() + rightMotor.getCurrentPosition()) / 2 < abs(randomAngle)){
+                    if ((leftMotor.getCurrentPosition() + rightMotor.getCurrentPosition()) / 2 < abs(randomAngle))
+                    {
                         Drive(0.0f, ROBOT_SPEED);
+                    }
+                    else
+                    {
+                        RandomStep = DriveToWall;
+
+                        rightMotor.resetEncoder();
+                        leftMotor.resetEncoder();
                     }
                 }
                 break;
-            
+
             case DriveToWall:
-                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
+                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE)
+                {
                     Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
-                }else{
+                }
+                else
+                {
                     DriveSteps = RandomRide;
+
+                    rightMotor.resetEncoder();
+                    leftMotor.resetEncoder();
                 }
                 break;
             }

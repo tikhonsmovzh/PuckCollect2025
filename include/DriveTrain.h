@@ -43,6 +43,8 @@ public:
         FunnelStep = WallRide;
         PDreg = &PDr;
         StepsCount = 1;
+        leftMotor.resetEncoder();
+        rightMotor.resetEncoder();
     }
 
     void begin(){
@@ -81,10 +83,14 @@ public:
                 if (IS_GYRO){
                     if (abs(abs(chopDegrees(90 * StepsCount)) - abs(gyro.getOrientation().x)) > ANGLE_ERROR){
                         Drive(0.0f, -ROBOT_SPEED);
+                    }else{
+                        FunnelStep = WallRide;
                     }
                 }else{
                     if (forwardDistanceSensor.readDistance() < ETALON_DISTANCE * StepsCount){
                         Drive(0.0f, -ROBOT_SPEED);
+                    }else{
+                        FunnelStep = WallRide;
                     }
                 }
                 break;

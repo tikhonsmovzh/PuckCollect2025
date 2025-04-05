@@ -4,6 +4,7 @@
 #include "Devices.h"
 #include "Configs.h"
 #include "utils/PDRegulator.h"
+#include "Intake.h"
 
 enum Steps
 {
@@ -189,7 +190,11 @@ public:
                 }
                 else
                 {
-                    DriveSteps = RandomRide;
+                    if (floorColor == ourColor){
+                        DriveSteps = RandomRide;
+                    }else{
+                        BaseStep = TurnMinusNinety;
+                    }
                 }
                 break;
             }

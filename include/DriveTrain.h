@@ -24,6 +24,12 @@ enum BaseSteps{
     DownDrive
 };
 
+enum RandomSteps{
+    GenerateAngle,
+    Turn,
+    DriveToWall
+};
+
 class DriveTrain{
 private:
     float GetOriantation(){
@@ -111,6 +117,10 @@ public:
             break;
 
         case Base:
+            if (!IS_GYRO){
+                DriveSteps = RandomRide;
+                break;
+            }
             switch (BaseStep)
             {
             case TurnMinusNinety:
@@ -139,13 +149,25 @@ public:
                 if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE){
                     Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
                 }else{
-                    BaseStep = TurnZero;
+                    DriveSteps = RandomRide;
                 }
                 break;
             }
             break;
 
         case RandomRide:
+            switch ()
+            {
+            case GenerateAngle:
+                
+                break;
+            
+            case Turn:
+                break;
+            
+            case DriveToWall:
+                break;
+            }
             break;
         }
     }

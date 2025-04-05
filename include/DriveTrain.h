@@ -49,7 +49,7 @@ private:
     FunnelSteps FunnelStep;
     BaseSteps BaseStep;
     PDRegulator *PDreg;
-    int StepsCount;
+    uint8_t StepsCount;
     float errValue, randomAngle; // почему то, ни одна моя прога без них не обходится 0_о
 public:
     DriveTrain(PDRegulator& PDr){
@@ -93,14 +93,14 @@ public:
                     leftMotor.resetEncoder();
                     StepsCount++;
                 }
-                if (abs(leftDistanceSensor.readDistance() - rightDistanceSensor.readDistance()) < 70.0f){
+                if (StepsCount > BASE_STEP_COUNT){
                     DriveSteps = Base;
                 }
                 break;
             
             case Turn:
                 if (IS_GYRO){
-                    if (abs(abs(chopDegrees(90 * StepsCount)) - abs(gyro.getOrientation().x)) > ANGLE_ERROR){
+                    if (abs(chopDegrees(chopDegrees(90 * StepsCount) - gyro.getOrientation().x)) > ANGLE_ERROR){
                         Drive(0.0f, -ROBOT_SPEED);
                     }else{
                         FunnelStep = WallRide;
@@ -125,8 +125,8 @@ public:
             switch (BaseStep)
             {
             case TurnMinusNinety:
-                Drive(0.0f, -90.0 - gyro.getOrientation().x);
-                if (abs(-90.0f - gyro.getOrientation().x) < ANGLE_ERROR){
+                Drive(0.0f, chopDegrees(-90.0 - gyro.getOrientation().x));
+                if (abs(chopDegrees(-90.0f - gyro.getOrientation().x)) < ANGLE_ERROR){
                     BaseStep = RightDrive;
                 }
                 break;
@@ -143,6 +143,9 @@ public:
                 Drive(0.0f, - gyro.getOrientation().x);
                 if (abs(gyro.getOrientation().x) < ANGLE_ERROR){
                     BaseStep = DownDrive;
+
+                    rightMotor.resetEncoder();
+                    leftMotor.resetEncoder();
                 }
                 break;
             

@@ -59,8 +59,9 @@ private:
     BaseSteps BaseStep;
     RandomSteps RandomStep;
     PDRegulator *PDreg;
+    ElapseTime ActionTime;
     uint8_t StepsCount;
-    float errValue, randomAngle; // почему то, ни одна моя прога без них не обходится 0_о
+    float errValue, randomAngle, timeToDo;
 public:
     DriveTrain(PDRegulator &PDr)
     {
@@ -68,9 +69,11 @@ public:
         FunnelStep = WallRide;
         BaseStep = TurnMinusNinety;
         RandomStep = GenerateAngle;
+        ActionTime = ElapseTime();
         PDreg = &PDr;
         StepsCount = 1;
         randomAngle = 1.0f;
+        timeToDo = 40.0;
         leftMotor.resetEncoder();
         rightMotor.resetEncoder();
     }
@@ -85,6 +88,11 @@ public:
 
     void update()
     {
+        if (ActionTime.seconds() > timeToDo){
+            if (DriveSteps != RandomRide){
+                DriveSteps = static_cast<Steps>(static_cast<int>(DriveSteps) + 1); // убей меня :)
+            }
+        }
         switch (DriveSteps)
         {
         case Diagonal:
@@ -95,6 +103,7 @@ public:
             else
             {
                 DriveSteps = Funnel;
+                ActionTime.reset();
             }
             break;
 
@@ -114,6 +123,7 @@ public:
                 if (StepsCount > BASE_STEP_COUNT)
                 {
                     DriveSteps = Base;
+                    ActionTime.reset();
                 }
                 break;
 
@@ -127,6 +137,7 @@ public:
                     else
                     {
                         FunnelStep = WallRide;
+                        ActionTime.reset();
                     }
                 }
                 else
@@ -138,6 +149,7 @@ public:
                     else
                     {
                         FunnelStep = WallRide;
+                        ActionTime.reset();
                     }
                 }
                 break;
@@ -149,6 +161,7 @@ public:
             if (!IS_GYRO)
             {
                 DriveSteps = RandomRide;
+                ActionTime.reset();
                 break;
             }
             switch (BaseStep)
@@ -192,6 +205,7 @@ public:
                 {
                     if (floorColor == ourColor){
                         DriveSteps = RandomRide;
+                        ActionTime.reset();
                     }else{
                         BaseStep = TurnMinusNinety;
                     }
@@ -230,6 +244,7 @@ public:
                     else
                     {
                         RandomStep = DriveToWall;
+                        ActionTime.reset();
 
                         rightMotor.resetEncoder();
                         leftMotor.resetEncoder();

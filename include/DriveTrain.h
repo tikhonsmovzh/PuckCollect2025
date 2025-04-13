@@ -59,23 +59,22 @@ private:
     BaseSteps BaseStep;
     RandomSteps RandomStep;
     PDRegulator *PDreg;
-    ElapseTime ActionTime;
+    ElapseTime *ActionTime;
     uint8_t StepsCount;
     float errValue, randomAngle, timeToDo;
+
 public:
-    DriveTrain(PDRegulator &PDr)
+    DriveTrain(PDRegulator &PDr, ElapseTime &actionTime)
     {
         DriveSteps = Diagonal;
         FunnelStep = WallRide;
         BaseStep = TurnMinusNinety;
         RandomStep = GenerateAngle;
-        ActionTime = ElapseTime();
         PDreg = &PDr;
+        ActionTime = &actionTime;
         StepsCount = 1;
         randomAngle = 1.0f;
         timeToDo = 40.0;
-        leftMotor.resetEncoder();
-        rightMotor.resetEncoder();
     }
 
     void begin()
@@ -85,12 +84,16 @@ public:
     void start()
     {
         PDreg->start();
+        leftMotor.resetEncoder();
+        rightMotor.resetEncoder();
     }
 
     void update()
     {
-        if (ActionTime.seconds() > timeToDo){
-            if (DriveSteps != RandomRide){
+        if (ActionTime->seconds() > timeToDo)
+        {
+            if (DriveSteps != RandomRide)
+            {
                 DriveSteps = static_cast<Steps>(static_cast<int>(DriveSteps) + 1); // убей меня :)
             }
         }
@@ -104,7 +107,7 @@ public:
             else
             {
                 DriveSteps = Funnel;
-                ActionTime.reset();
+                ActionTime->reset();
             }
             break;
 
@@ -117,14 +120,14 @@ public:
                 if (forwardDistanceSensor.readDistance() < ETALON_DISTANCE * StepsCount)
                 {
                     FunnelStep = Turn;
-                    rightMotor.resetEncoder();
-                    leftMotor.resetEncoder();
+                    rightMotor.softwareEncoderReset();
+                    leftMotor.softwareEncoderReset();
                     StepsCount++;
                 }
                 if (StepsCount > BASE_STEP_COUNT)
                 {
                     DriveSteps = Base;
-                    ActionTime.reset();
+                    ActionTime->reset();
                 }
                 break;
 
@@ -138,7 +141,7 @@ public:
                     else
                     {
                         FunnelStep = WallRide;
-                        ActionTime.reset();
+                        ActionTime->reset();
                     }
                 }
                 else
@@ -150,7 +153,7 @@ public:
                     else
                     {
                         FunnelStep = WallRide;
-                        ActionTime.reset();
+                        ActionTime->reset();
                     }
                 }
                 break;
@@ -162,7 +165,7 @@ public:
             if (!IS_GYRO)
             {
                 DriveSteps = RandomRide;
-                ActionTime.reset();
+                ActionTime->reset();
                 break;
             }
             switch (BaseStep)
@@ -192,8 +195,8 @@ public:
                 {
                     BaseStep = DownDrive;
 
-                    rightMotor.resetEncoder();
-                    leftMotor.resetEncoder();
+                    rightMotor.softwareEncoderReset();
+                    leftMotor.softwareEncoderReset();
                 }
                 break;
 
@@ -204,10 +207,13 @@ public:
                 }
                 else
                 {
-                    if (floorColor == ourColor){
+                    if (floorColor == ourColor)
+                    {
                         DriveSteps = RandomRide;
-                        ActionTime.reset();
-                    }else{
+                        ActionTime->reset();
+                    }
+                    else
+                    {
                         BaseStep = TurnMinusNinety;
                     }
                 }
@@ -231,8 +237,8 @@ public:
                     if (abs(chopDegrees(randomAngle - gyro.getOrientation().x)) < ANGLE_ERROR)
                     {
                         RandomStep = DriveToWall;
-                        rightMotor.resetEncoder();
-                        leftMotor.resetEncoder();
+                        rightMotor.softwareEncoderReset();
+                        leftMotor.softwareEncoderReset();
                     }
                 }
                 else
@@ -245,10 +251,10 @@ public:
                     else
                     {
                         RandomStep = DriveToWall;
-                        ActionTime.reset();
+                        ActionTime->reset();
 
-                        rightMotor.resetEncoder();
-                        leftMotor.resetEncoder();
+                        rightMotor.softwareEncoderReset();
+                        leftMotor.softwareEncoderReset();
                     }
                 }
                 break;
@@ -262,8 +268,8 @@ public:
                 {
                     DriveSteps = RandomRide;
 
-                    rightMotor.resetEncoder();
-                    leftMotor.resetEncoder();
+                    rightMotor.softwareEncoderReset();
+                    leftMotor.softwareEncoderReset();
                 }
                 break;
             }
@@ -273,4 +279,5 @@ public:
 };
 
 PDRegulator PDreg(0.1f, 0.1f);
-DriveTrain driveTrain(PDreg);
+ElapseTime actionTime;
+DriveTrain driveTrain(PDreg, actionTime);

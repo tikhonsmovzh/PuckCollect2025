@@ -33,6 +33,7 @@ void intakeBegin()
 
 void intakeStart()
 {
+    separatorMotor.resetEncoder();
     clampServo.write(CLAMP_SERVO_CALMP_POS);
     _separatorRegulator.start();
     _clampTimer.reset();
@@ -80,16 +81,21 @@ void intakeUpdate()
 
     int32_t separatorErr = _targetSeparatorPos - separatorMotor.getCurrentPosition();
 
-    if(abs(separatorErr) > SEPARATOR_SENS){
-        if(_separartorDefendTimer.seconds() > BRUSH_DEFEND_TIMER){
+    if (abs(separatorErr) > SEPARATOR_SENS)
+    {
+        separatorMotor.setPower(_separatorRegulator.update(separatorErr));
+
+        if (_separartorDefendTimer.seconds() > BRUSH_DEFEND_TIMER)
+        {
             _targetSeparatorPos -= sgn(separatorErr) * SEPARATOR_MOTOR_STEP;
             _separartorDefendTimer.reset();
         }
     }
     else
+    {
         _separartorDefendTimer.reset();
-
-    separatorMotor.setPower(_separatorRegulator.update(separatorErr));
+        separatorMotor.setPower(0.0f);
+    }
 
     if (abs(separatorErr) < SEPARATOR_SENS && puckColor != WHITE)
     {

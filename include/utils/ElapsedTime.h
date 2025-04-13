@@ -14,15 +14,15 @@ public:
         _resetMicros = micros();
     }
 
-    uint64_t micros(){
+    uint64_t timeMicros(){
         return micros() - _resetMicros;
     }
 
     float milliseconds(){
-        return micros() / 1000.0f;
+        return timeMicros() / 1000.0f;
     }
 
     float seconds(){
-        return micros() / 1000000.0f;
+        return timeMicros() / 1000000.0f;
     }
 };

@@ -84,6 +84,7 @@ public:
 
     void start()
     {
+        PDreg->start();
     }
 
     void update()

@@ -7,11 +7,12 @@ void setup() {
   Serial.begin(115200);
 
   devicesBegin();
-  driveTrain.begin();
-  intakeBegin();
 
   while (!startButton.readState());
   while (startButton.readState());
+  
+  driveTrain.begin();
+  intakeBegin();
   
   gyro.reset();
 

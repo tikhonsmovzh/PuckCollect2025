@@ -4,6 +4,9 @@
 #include <Wire.h>
 #include <SoftWire.h>
 
+#define DEFAULT_HARD_WIRE_TIMEOUT 4
+#define DEFAULT_SOFT_WIRE_TIMEOUT 6
+
 class IWire
 {
 public:
@@ -38,7 +41,12 @@ class HardwareWire : public IWire
 public:
     void begin()
     {
+        Wire.setTimeout(DEFAULT_HARD_WIRE_TIMEOUT);
         Wire.begin();
+    }
+
+    void setTimeout(uint32_t timeout){
+        Wire.setTimeout(timeout);
     }
 
     void setClock(uint32_t clock)
@@ -92,8 +100,13 @@ public:
         _softWire = new SoftWire(sda, scl);
     }
 
+    void setTimeout(uint32_t timeout){
+        _softWire->setTimeout(timeout);
+    }
+
     void begin()
     {
+        _softWire->setTimeout(DEFAULT_SOFT_WIRE_TIMEOUT);
         _softWire->begin();
     }
 

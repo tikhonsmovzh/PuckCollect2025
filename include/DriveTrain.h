@@ -4,6 +4,7 @@
 #include "Devices.h"
 #include "Configs.h"
 #include "utils/PDRegulator.h"
+#include "utils/Sgn.h"
 #include "Intake.h"
 
 enum Steps
@@ -54,6 +55,27 @@ private:
         return ((float)rand() / RAND_MAX) * (max - min) + min;
     }
 
+    
+    bool driveToWall(int etalonDistanceK){
+        if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE * etalonDistanceK)
+        {
+            Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
+            return false;
+        }
+        return true;
+    }
+
+    bool turnByGyro(float angle){
+        auto a = angle - chopDegrees(gyro.getOrientation().x);
+        if (abs(a) > ANGLE_ERROR)
+        {
+            Drive(0.0f, ROBOT_SPEED * sgn(a));
+            return false;
+        }
+        return true;
+    }
+
+
     Steps DriveSteps;
     FunnelSteps FunnelStep;
     BaseSteps BaseStep;
@@ -90,25 +112,11 @@ public:
 
     void update()
     {
-        if (ActionTime->seconds() > timeToDo)
-        {
-            if (DriveSteps != RandomRide)
-            {
-                DriveSteps = static_cast<Steps>(static_cast<int>(DriveSteps) + 1); // убей меня :)
-            }
-        }
         switch (DriveSteps)
         {
         case Diagonal:
-            if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE)
-            {
-                Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
-            }
-            else
-            {
+            if (driveToWall(1))
                 DriveSteps = Funnel;
-                ActionTime->reset();
-            }
             break;
 
         case Funnel:
@@ -127,21 +135,15 @@ public:
                 if (StepsCount > BASE_STEP_COUNT)
                 {
                     DriveSteps = Base;
-                    ActionTime->reset();
                 }
                 break;
 
             case Turn:
                 if (IS_GYRO)
                 {
-                    if (abs(chopDegrees(chopDegrees(90 * StepsCount) - gyro.getOrientation().x)) > ANGLE_ERROR)
-                    {
-                        Drive(0.0f, -ROBOT_SPEED);
-                    }
-                    else
+                    if (turnByGyro(90 * StepsCount))
                     {
                         FunnelStep = WallRide;
-                        ActionTime->reset();
                     }
                 }
                 else
@@ -153,7 +155,6 @@ public:
                     else
                     {
                         FunnelStep = WallRide;
-                        ActionTime->reset();
                     }
                 }
                 break;
@@ -165,52 +166,37 @@ public:
             if (!IS_GYRO)
             {
                 DriveSteps = RandomRide;
-                ActionTime->reset();
                 break;
             }
             switch (BaseStep)
             {
             case TurnMinusNinety:
-                Drive(0.0f, chopDegrees(-90.0 - gyro.getOrientation().x));
-                if (abs(chopDegrees(-90.0f - gyro.getOrientation().x)) < ANGLE_ERROR)
+                if (turnByGyro(-90))
                 {
                     BaseStep = RightDrive;
                 }
                 break;
 
             case RightDrive:
-                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE)
-                {
-                    Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
-                }
-                else
+                if (driveToWall(1))
                 {
                     BaseStep = TurnZero;
                 }
                 break;
 
             case TurnZero:
-                Drive(0.0f, -gyro.getOrientation().x);
-                if (abs(gyro.getOrientation().x) < ANGLE_ERROR)
+                if (turnByGyro(0.0f))
                 {
                     BaseStep = DownDrive;
-
-                    rightMotor.softwareEncoderReset();
-                    leftMotor.softwareEncoderReset();
                 }
                 break;
 
             case DownDrive:
-                if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE)
-                {
-                    Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
-                }
-                else
+                if (driveToWall(1))
                 {
                     if (floorColor == ourColor)
                     {
                         DriveSteps = RandomRide;
-                        ActionTime->reset();
                     }
                     else
                     {
@@ -221,7 +207,7 @@ public:
             }
             break;
 
-        case RandomRide:
+        case RandomRide: // вообще телега отдельная, пока что ее не трогаю
             switch (RandomStep)
             {
             case GenerateAngle:

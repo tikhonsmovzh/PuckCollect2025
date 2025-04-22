@@ -9,36 +9,43 @@
 
 enum Steps
 {
-    Diagonal,
-    Funnel,
-    Base,
-    RandomRide
+    Diagonal = 0,
+    Funnel = 1,
+    Base = 2,
+    RandomRide = 3
 };
 
 enum FunnelSteps
 {
-    WallRide,
-    Turn
+    WallRide = 0,
+    Turn = 1
 };
 
 enum BaseSteps
 {
-    TurnMinusNinety,
-    RightDrive,
-    TurnZero,
-    DownDrive
+    TurnMinusNinety = 0,
+    RightDrive = 1,
+    TurnZero = 2,
+    DownDrive = 3
 };
 
 enum RandomSteps
 {
-    GenerateAngle,
-    TurnRAng,
-    DriveToWall
+    GenerateAngle = 0,
+    TurnRAng = 1,
+    DriveToWall = 2
 };
 
 class DriveTrain
 {
 private:
+    Steps nextStep(Steps current)
+    {
+        int value = static_cast<int>(current);
+        value = (value + 1) % 4;
+        return static_cast<Steps>(value);
+    }
+
     float GetOriantation()
     {
         return gyro.getOrientation().x; // надо будет свапнуть х на то что будет
@@ -54,7 +61,6 @@ private:
     { // это из инета
         return ((float)rand() / RAND_MAX) * (max - min) + min;
     }
-
     
     bool driveToWall(int etalonDistanceK){
         if (forwardDistanceSensor.readDistance() > ETALON_DISTANCE * etalonDistanceK)
@@ -82,7 +88,7 @@ private:
     RandomSteps RandomStep;
     PDRegulator *PDreg;
     ElapseTime *ActionTime;
-    uint8_t StepsCount;
+    uint8_t StepsCount, generalState, oldGeneralState;
     float errValue, randomAngle, timeToDo;
 
 public:
@@ -92,6 +98,8 @@ public:
         FunnelStep = WallRide;
         BaseStep = TurnMinusNinety;
         RandomStep = GenerateAngle;
+        generalState = DriveSteps + FunnelStep + BaseStep + RandomStep;
+        oldGeneralState = generalState;
         PDreg = &PDr;
         ActionTime = &actionTime;
         StepsCount = 1;
@@ -112,8 +120,20 @@ public:
 
     void update()
     {
+        generalState = DriveSteps + FunnelStep + BaseStep + RandomStep;
+        if (oldGeneralState != generalState){
+            ActionTime->reset();
+            oldGeneralState = generalState;
+        }
+
+        if (ActionTime->seconds() > timeToDo){ // первородый хтонический ужас, но пока что так --__--
+            ActionTime->reset();
+            DriveSteps = nextStep(DriveSteps);
+        }
+
         switch (DriveSteps)
         {
+
         case Diagonal:
             if (driveToWall(1))
                 DriveSteps = Funnel;

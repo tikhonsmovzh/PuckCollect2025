@@ -34,7 +34,7 @@ DriveForwardToTheLimit DriveForwardToTheLimitObj(_DFTTL_PD, _DFTTL_T);
 
 class TurnToTheWall : DriveSample{
 public:
-    DriveForwardToTheLimit(PDRegulator &PDr, ElapseTime &actionTime){
+    TurnToTheWall(PDRegulator &PDr, ElapseTime &actionTime){
         PDreg = &PDr;
         PDreg->start();
         ActionTime = &actionTime;
@@ -49,7 +49,7 @@ public:
         dropProcess();
         return true;
     }
-}
+};
 
 PDRegulator _TTTW_PD(0.1f, 0.1f);
 ElapseTime _TTTW_T;
@@ -58,7 +58,7 @@ TurnToTheWall TurnToTheWallObj(_TTTW_PD, _TTTW_T);
 
 class DrivingAlongTheWall : DriveSample{
 public:
-    DriveForwardToTheLimit(PDRegulator &PDr, ElapseTime &actionTime){
+    DrivingAlongTheWall(PDRegulator &PDr, ElapseTime &actionTime){
         PDreg = &PDr;
         PDreg->start();
         ActionTime = &actionTime;
@@ -67,15 +67,15 @@ public:
 
     bool Execute(float Dist){
         if (forwardDistanceSensor.readDistance() > Dist){
-            errValue = rightDistanceSensor.readDistance() - Dist;
+            float errValue = rightDistanceSensor.readDistance() - Dist;
             Drive(ROBOT_SPEED, PDreg->update(errValue));
             return false;
         }
         dropProcess();
         return true;
     }
-}
+};
 
 PDRegulator _DATW_PD(0.1f, 0.1f);
 ElapseTime _DATW_T;
-TurnToTheWall TurnToTheWallObj(_DATW_PD, _DATW_T);
+DrivingAlongTheWall DrivingAlongTheWall(_DATW_PD, _DATW_T);

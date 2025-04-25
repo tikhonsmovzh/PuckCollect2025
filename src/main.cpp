@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "Devices.h"
-#include "DriveTrainV2.h"
+#include "DriveTrain/DriveTrainV2.h"
 #include "Intake.h"
 
 void setup() {
@@ -24,6 +24,5 @@ void setup() {
 }
 
 void loop() {
-  Update();
   intakeUpdate();
 }

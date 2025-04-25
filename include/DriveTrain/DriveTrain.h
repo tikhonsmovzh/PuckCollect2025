@@ -7,6 +7,10 @@
 #include "utils/Sgn.h"
 #include "Intake.h"
 
+/*
+ он здесь чисто как референс + запасной план
+*/
+
 enum Steps
 {
     Diagonal = 0,

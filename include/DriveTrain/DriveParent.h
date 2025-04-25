@@ -26,14 +26,15 @@ protected:
     }
 
     void encoderReset(){
-        rightMotor.getCurrentPosition();
-        leftMotor.getCurrentPosition();
+        rightMotor.softwareEncoderReset();
+        leftMotor.softwareEncoderReset();
     }
 
     bool driveToWall(float dist){
+        
         if (forwardDistanceSensor.readDistance() > dist)
         {
-            Drive(ROBOT_SPEED, (rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()) * FORWARD_RIDE_K);
+            Drive(ROBOT_SPEED, PDreg->update(rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
             return false;
         }
         encoderReset();
@@ -49,16 +50,13 @@ protected:
         }
         return true;
     }
+    void dropProcess(){
+        Drive(0.0, 0.0);
+        encoderReset();
+    }
 
     PDRegulator *PDreg;
     ElapseTime *ActionTime;
     bool compliteTask;
     float timeToExecute;
-public:
-    
-
-
-    virtual bool Execute(){
-        return true;
-    }
 };

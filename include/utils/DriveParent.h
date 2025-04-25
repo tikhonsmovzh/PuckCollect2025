@@ -8,6 +8,14 @@
 
 class DriveSample{
 protected:
+    void startTimer(){
+        ActionTime->reset();
+    }
+
+    bool checkTimer(){
+        return timeToExecute - ActionTime->seconds() < 0.5;
+    }
+
     void Drive(float forward, float turn){
         leftMotor.setPower(forward + turn);
         rightMotor.setPower(forward - turn);
@@ -45,14 +53,12 @@ protected:
     PDRegulator *PDreg;
     ElapseTime *ActionTime;
     bool compliteTask;
+    float timeToExecute;
 public:
-    DriveSample(PDRegulator &PDr, ElapseTime &actionTime){
-        PDreg = &PDr;
-        ActionTime = &actionTime;
-    }
+    
 
 
     virtual bool Execute(){
         return true;
     }
-}
+};

@@ -12,14 +12,34 @@ enum tripAlgorithm{
     diagonalPassage,
     spiralRide,
     returningHome,
-    chaoticDriving
+    chaoticDriving,
+    rollBack
+};
+
+
+class diagonalPassageTask : DriveSample{
+public:
+    diagonalPassageTask(PDRegulator &PDr, ElapseTime &actionTime){
+        PDreg = &PDr;
+        ActionTime = &actionTime;
+    }
+
+
+    bool Execute() override{
+        if (driveToWall(ETALON_DISTANCE)){
+                return false;
+        }
+        return true;
+    }
 };
 
 
 
 tripAlgorithm myTrip = diagonalPassage;
-diagonalPassageTask diagonalPassageObj;
 
+PDRegulator PDreg(0.1f, 0.1f);
+ElapseTime actionTime;
+diagonalPassageTask diagonalPassageObj(PDreg, actionTime);
 
 
 void Update(){
@@ -47,13 +67,3 @@ void Update(){
         break;
     }
 }
-
-class diagonalPassageTask : DriveSample{
-public:
-    bool Execute() override{
-        if (driveToWall(ETALON_DISTANCE)){
-                return false;
-        }
-        return true;
-    }
-};

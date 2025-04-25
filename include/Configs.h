@@ -1,6 +1,9 @@
 #pragma once
 #include <Arduino.h>
 
+// PDRegulatorCoefficients
+#define FORWARD_RIDE_K 1
+
 //DriveTrain
 #define IS_GYRO false
 #define IS_DISTANCE_SENSOR true

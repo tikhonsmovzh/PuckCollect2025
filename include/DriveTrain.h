@@ -104,7 +104,6 @@ public:
         ActionTime = &actionTime;
         StepsCount = 1;
         randomAngle = 1.0f;
-        timeToDo = 40.0;
     }
 
     void begin()
@@ -120,17 +119,6 @@ public:
 
     void update()
     {
-        generalState = DriveSteps + FunnelStep + BaseStep + RandomStep;
-        if (oldGeneralState != generalState){
-            ActionTime->reset();
-            oldGeneralState = generalState;
-        }
-
-        if (ActionTime->seconds() > timeToDo){ // первородый хтонический ужас, но пока что так --__--
-            ActionTime->reset();
-            DriveSteps = nextStep(DriveSteps);
-        }
-
         switch (DriveSteps)
         {
 

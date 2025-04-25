@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "Devices.h"
-#include "DriveTrain.h"
+#include "DriveTrainV2.h"
 #include "Intake.h"
 
 void setup() {
@@ -11,7 +11,6 @@ void setup() {
   while (!startButton.readState());
   while (startButton.readState());
   
-  driveTrain.begin();
   intakeBegin();
   
   gyro.reset();
@@ -21,11 +20,10 @@ void setup() {
   while (!startButton.readState());
   while (startButton.readState());
 
-  driveTrain.start();
   intakeStart();
 }
 
 void loop() {
-  driveTrain.update();
+  Update();
   intakeUpdate();
 }

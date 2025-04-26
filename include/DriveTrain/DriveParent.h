@@ -8,13 +8,6 @@
 
 class DriveSample{
 protected:
-    void startTimer(){
-        ActionTime->reset();
-    }
-
-    bool checkTimer(){
-        return timeToExecute - ActionTime->seconds() < 0.5;
-    }
 
     void Drive(float forward, float turn){
         leftMotor.setPower(forward + turn);
@@ -30,6 +23,12 @@ protected:
         leftMotor.softwareEncoderReset();
     }
 
+    void dropProcess(){
+        Drive(0.0, 0.0);
+        encoderReset();
+    }
+
+/*       это тупо рефы для меня
     bool driveToWall(float dist){
         
         if (forwardDistanceSensor.readDistance() > dist)
@@ -50,13 +49,18 @@ protected:
         }
         return true;
     }
-    void dropProcess(){
-        Drive(0.0, 0.0);
+*/
+    PDRegulator *PDreg;
+    
+public:
+    float arg;
+
+    virtual void Start(){
         encoderReset();
+        PDreg->start();
     }
 
-    PDRegulator *PDreg;
-    ElapseTime *ActionTime;
-    bool compliteTask;
-    float timeToExecute;
+    virtual bool Execute(){
+        return true;
+    }
 };

@@ -22,11 +22,9 @@ void setup() {
   while (startButton.readState());
 
   intakeStart();
-
-  Queue<SimpleAction> q;
 }
 
 void loop() {
-  BodyControl(q);
+  BodyControl(myQueue);
   intakeUpdate();
 }

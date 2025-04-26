@@ -8,6 +8,30 @@
 #include "DriveTrain/DriveParent.h"
 #include "Intake.h"
 
+
+
+enum SimpleActions{
+    DriveToWall,        // +
+    TurnOnWall,         // +
+    DriveAlongWall,     // +
+    DriveOnEncoder,     // -
+    TurnLocal,          // -
+    TurnGlobal          // -
+};
+
+
+
+struct SimpleAction{
+    SimpleActions name;
+    float arg;
+    SimpleAction(SimpleActions n, float a){
+        name = n;
+        arg = a;
+    }
+};
+
+
+
 class DriveForwardToTheLimit : DriveSample{
 public:
     DriveForwardToTheLimit(PDRegulator &PDr, ElapseTime &actionTime){
@@ -18,7 +42,7 @@ public:
 
 
     bool Execute(float Dist){
-        if (driveToWall(Dist)){
+        if (!driveToWall(Dist)){
                 return false;
         }
         dropProcess();

@@ -20,7 +20,7 @@ enum SimpleActions{
     DriveAlongWall,     // +
     DriveOnEncoder,     // +
     TurnLocal,          // -
-    TurnGlobal          // -
+    TurnGlobal          // +
 };
 */
 

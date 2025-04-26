@@ -27,29 +27,6 @@ protected:
         Drive(0.0, 0.0);
         encoderReset();
     }
-
-/*       это тупо рефы для меня
-    bool driveToWall(float dist){
-        
-        if (forwardDistanceSensor.readDistance() > dist)
-        {
-            Drive(ROBOT_SPEED, PDreg->update(rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
-            return false;
-        }
-        encoderReset();
-        return true;
-    }
-
-    bool turnByGyro(float angle){
-        auto error = angle - chopDegrees(gyro.getOrientation().x);
-        if (abs(error) > ANGLE_ERROR)
-        {
-            Drive(0.0f, ROBOT_SPEED * sgn(error));
-            return false;
-        }
-        return true;
-    }
-*/
     PDRegulator *PDreg;
     
 public:

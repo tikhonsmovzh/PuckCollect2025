@@ -18,7 +18,7 @@ enum SimpleActions{
     DriveToWall,        // +
     TurnOnWall,         // +
     DriveAlongWall,     // +
-    DriveOnEncoder,     // -
+    DriveOnEncoder,     // +
     TurnLocal,          // -
     TurnGlobal          // -
 };
@@ -82,7 +82,7 @@ public:
 };
 
 PDRegulator _DATW_PD(0.1f, 0.1f); // надо норм каэфициенты!
-DrivingAlongTheWall DrivingAlongTheWall(_DATW_PD);
+DrivingAlongTheWall DrivingAlongTheWallObj(_DATW_PD);
 
 
 class TravelByEncoderValue : public DriveSample{
@@ -99,3 +99,29 @@ public:
         return true;        
     }
 };
+
+PDRegulator _TBEV_PD(0.1f, 0.1f); // надо норм каэфициенты!
+TravelByEncoderValue TravelByEncoderValueObj(_TBEV_PD);
+
+
+class TurnByGlobalCoordinates : public DriveSample{
+public:
+    TurnByGlobalCoordinates(PDRegulator &PDr){
+        PDreg = &PDr;
+    }
+
+    bool Execute(){
+        if (!IS_GYRO) return true; //просто пропустит
+
+        auto error = arg - chopDegrees(gyro.getOrientation().x);
+        if (abs(error) > ANGLE_ERROR)
+        {
+            Drive(0.0f, ROBOT_SPEED * sgn(error));
+            return false;
+        }
+        return true;     
+    }
+};
+
+PDRegulator _TBGC_PD(0.1f, 0.1f); // надо норм каэфициенты!
+TurnByGlobalCoordinates TurnByGlobalCoordinatesObj(_TBGC_PD);

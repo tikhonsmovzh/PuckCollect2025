@@ -32,6 +32,13 @@ protected:
 public:
     float arg;
 
+    DriveSample(){}; // для лчереди
+
+    DriveSample(PDRegulator &PDr, float t_arg){
+        PDreg = &PDr;
+        arg = t_arg;
+    }
+
     virtual void Start(){
         encoderReset();
         PDreg->start();

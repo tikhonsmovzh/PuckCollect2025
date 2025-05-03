@@ -32,7 +32,7 @@ public:
         PDreg = &PDr;
     }
 
-    bool Execute(){ // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
+    bool Execute() override{ // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
         if (forwardDistanceSensor.readDistance() > arg){
             Drive(ROBOT_SPEED, PDreg->update(rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
             return false;
@@ -52,7 +52,7 @@ public:
         PDreg = &PDr;
     }
 
-    bool Execute(){
+    bool Execute() override{
         if (forwardDistanceSensor.readDistance() < arg){
             Drive(0.0f, -ROBOT_SPEED);
             return false;
@@ -71,7 +71,7 @@ public:
         PDreg = &PDr;
     }
 
-    bool Execute(){
+    bool Execute() override{
         if (forwardDistanceSensor.readDistance() > arg){
             float errValue = rightDistanceSensor.readDistance() - arg;
             Drive(ROBOT_SPEED, PDreg->update(errValue));
@@ -91,12 +91,12 @@ public:
         PDreg = &PDr;
     }
 
-    bool Execute(){
+    bool Execute() override{
         if (((leftMotor.getCurrentPosition() + rightMotor.getCurrentPosition()) / 2) - arg > 0){
             Drive(ROBOT_SPEED, PDreg->update(rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
             return false;
         }
-        return true;        
+        return true;
     }
 };
 
@@ -110,7 +110,7 @@ public:
         PDreg = &PDr;
     }
 
-    bool Execute(){
+    bool Execute() override{
         if (!IS_GYRO) return true; //просто пропустит
 
         auto error = arg - chopDegrees(gyro.getOrientation().x);
@@ -119,9 +119,48 @@ public:
             Drive(0.0f, ROBOT_SPEED * sgn(error));
             return false;
         }
-        return true;     
+        return true;
     }
 };
 
 PDRegulator _TBGC_PD(0.1f, 0.1f); // надо норм каэфициенты!
 TurnByGlobalCoordinates TurnByGlobalCoordinatesObj(_TBGC_PD);
+
+
+class TurnByLocalCoordinates : public DriveSample{
+private: 
+    float startCoords;
+public:
+    void Start() override{
+        encoderReset();
+        PDreg->start();
+        if (IS_GYRO) startCoords = GetOriantation();
+        else startCoords = -1.0; // ненужно
+    }
+    TurnByLocalCoordinates(PDRegulator &PDr){
+        PDreg = &PDr;
+    }
+
+    bool Execute() override{
+        if (IS_GYRO){
+            auto error = arg - (startCoords - GetOriantation());
+            if (abs(error) > ANGLE_ERROR)
+            {
+                Drive(0.0f, ROBOT_SPEED * sgn(error));
+                return false;
+            }
+            return true;
+        }else{
+            auto error = arg - (((leftMotor.getCurrentPosition() - rightMotor.getCurrentPosition()) / SINGLE_ENCODER_STEP * WHEEL_DISTANCE) / (90 * WHEEL_DISTANCE));
+            if (abs(error) > ANGLE_ERROR)
+            {
+                Drive(0.0f, ROBOT_SPEED * sgn(error));
+                return false;
+            }
+            return true;
+        }
+    }
+};
+
+PDRegulator _TBLC_PD(0.1f, 0.1f); // надо норм каэфициенты!
+TurnByLocalCoordinates TurnByLocalCoordinatesObj(_TBLC_PD);

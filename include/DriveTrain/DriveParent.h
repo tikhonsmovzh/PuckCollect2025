@@ -15,7 +15,7 @@ protected:
     }
 
     float GetOriantation(){
-        return gyro.getOrientation().x;
+        return chopDegrees(gyro.getOrientation().x);
     }
 
     void encoderReset(){

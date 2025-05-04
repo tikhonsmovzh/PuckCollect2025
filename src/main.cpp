@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "Devices.h"
-#include "DriveTrain/Controller.h"
-#include "DriveTrain/DriveTrainV2.h"
+#include "DriveTrain/DriveTrain.h"
 #include "Intake.h"
 
 void setup() {
@@ -17,14 +16,17 @@ void setup() {
   gyro.reset();
 
   detectFloor();
+
+  driveTrainBegin();
   
   while (!startButton.readState());
   while (startButton.readState());
 
   intakeStart();
+  driveTrainStart();
 }
 
 void loop() {
-  BodyControl(myQueue);
+  driveTrainUpdate();
   intakeUpdate();
 }

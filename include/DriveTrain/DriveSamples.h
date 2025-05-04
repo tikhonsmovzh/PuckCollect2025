@@ -6,12 +6,8 @@
 #include "utils/PDRegulator.h"
 #include "utils/Queue.h"
 #include "utils/Sgn.h"
-#include "DriveTrain/DriveParent.h"
+#include "DriveTrain/DriveSample.h"
 #include "Intake.h"
-
-
-Queue<DriveSample*> myQueue;
-
 
 /*
 enum SimpleActions{
@@ -26,10 +22,14 @@ enum SimpleActions{
 
 
 class DriveForwardToTheLimit : public DriveSample{
+    float _distance;
 public:
-    DriveForwardToTheLimit(PDRegulator &PDr, float i_arg) : DriveSample(PDr, i_arg) {}
+    DriveForwardToTheLimit(PDRegulator &PDr, float distance) : DriveSample(PDr) {
+        _distance = distance;
+    }
+
     bool Execute() override{ // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
-        if (forwardDistanceSensor.readDistance() > arg){
+        if (forwardDistanceSensor.readDistance() > _distance){
             Drive(ROBOT_SPEED, PDreg->update(rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
             return false;
         }
@@ -39,10 +39,14 @@ public:
 
 
 class TurnToTheWall : public DriveSample{
+    float _distance;
 public:
-    TurnToTheWall(PDRegulator &PDr, float i_arg) : DriveSample(PDr, i_arg) {}
+    TurnToTheWall(PDRegulator &PDr, float distance) : DriveSample(PDr) {
+        _distance = distance;
+    }
+
     bool Execute() override{
-        if (forwardDistanceSensor.readDistance() < arg){
+        if (forwardDistanceSensor.readDistance() < _distance){
             Drive(0.0f, -ROBOT_SPEED);
             return false;
         }
@@ -52,11 +56,14 @@ public:
 
 
 class DrivingAlongTheWall : public DriveSample{
+    float _distance;
 public:
-    DrivingAlongTheWall(PDRegulator &PDr, float i_arg) : DriveSample(PDr, i_arg) {}
+    DrivingAlongTheWall(PDRegulator &PDr, float distance) : DriveSample(PDr) {
+        _distance = distance;
+    }
     bool Execute() override{
-        if (forwardDistanceSensor.readDistance() > arg){
-            float errValue = rightDistanceSensor.readDistance() - arg;
+        if (forwardDistanceSensor.readDistance() > _distance){
+            float errValue = rightDistanceSensor.readDistance() - _distance;
             Drive(ROBOT_SPEED, PDreg->update(errValue));
             return false;
         }
@@ -66,11 +73,15 @@ public:
 
 
 class TravelByEncoderValue : public DriveSample{
+    float _encPos;
 public:
-    TravelByEncoderValue(PDRegulator &PDr, float i_arg) : DriveSample(PDr, i_arg) {}
+    TravelByEncoderValue(PDRegulator &PDr, float encPos) : DriveSample(PDr) {
+        _encPos = encPos;
+    }
+
     bool Execute() override{
-        if (((leftMotor.getCurrentPosition() + rightMotor.getCurrentPosition()) / 2) - arg > 0){
-            Drive(ROBOT_SPEED, PDreg->update(rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
+        if (((leftMotor.getCurrentPosition() + rightMotor.getCurrentPosition()) / 2) > _encPos){
+            Drive(-ROBOT_SPEED, PDreg->update(rightMotor.getCurrentPosition() - leftMotor.getCurrentPosition()));
             return false;
         }
         return true;
@@ -79,12 +90,15 @@ public:
 
 
 class TurnByGlobalCoordinates : public DriveSample{
+    float _targetRotate;
 public:
-    TurnByGlobalCoordinates(PDRegulator &PDr, float i_arg) : DriveSample(PDr, i_arg) {}
+    TurnByGlobalCoordinates(PDRegulator &PDr, float targetRotate) : DriveSample(PDr) {
+        _targetRotate = targetRotate;
+    }
     bool Execute() override{
         if (!IS_GYRO) return true; //просто пропустит
 
-        auto error = arg - GetOriantation();
+        auto error = chopDegrees(_targetRotate - GetOriantation());
         if (abs(error) > ANGLE_ERROR)
         {
             Drive(0.0f, ROBOT_SPEED * sgn(error));
@@ -97,19 +111,20 @@ public:
 
 class TurnByLocalCoordinates : public DriveSample{
 private: 
+    float _targetTurn;
     float startCoords;
 public:
-    TurnByLocalCoordinates(PDRegulator &PDr, float i_arg) : DriveSample(PDr, i_arg) {}
+    TurnByLocalCoordinates(PDRegulator &PDr, float targetTurn) : DriveSample(PDr) {
+        _targetTurn = targetTurn;
+    }
     void Start() override{
-        encoderReset();
-        PDreg->start();
+        DriveSample::Start();
         if (IS_GYRO) startCoords = GetOriantation();
-        else startCoords = -1.0; // ненужно
     }
 
     bool Execute() override{
         if (IS_GYRO){
-            auto error = arg - (startCoords - GetOriantation());
+            auto error = chopDegrees(_targetTurn - (startCoords - GetOriantation()));
             if (abs(error) > ANGLE_ERROR)
             {
                 Drive(0.0f, ROBOT_SPEED * sgn(error));
@@ -117,7 +132,7 @@ public:
             }
             return true;
         }else{
-            auto error = arg - (((leftMotor.getCurrentPosition() - rightMotor.getCurrentPosition()) / SINGLE_ENCODER_STEP * WHEEL_DISTANCE) / (90 * WHEEL_DISTANCE));
+            auto error = chopDegrees(_targetTurn - chopDegrees(((leftMotor.getCurrentPosition() - rightMotor.getCurrentPosition()) / SINGLE_ENCODER_STEP * WHEEL_DISTANCE) / (90 * WHEEL_DISTANCE)));
             if (abs(error) > ANGLE_ERROR)
             {
                 Drive(0.0f, ROBOT_SPEED * sgn(error));

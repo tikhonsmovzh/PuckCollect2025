@@ -15,7 +15,7 @@ protected:
     }
 
     float GetOriantation(){
-        return chopDegrees(gyro.getOrientation().x);
+        return gyro.getOrientation().x;
     }
 
     void encoderReset(){
@@ -30,13 +30,10 @@ protected:
     PDRegulator *PDreg;
     
 public:
-    float arg;
-
     DriveSample(){}; // для лчереди
 
-    DriveSample(PDRegulator &PDr, float t_arg){
+    DriveSample(PDRegulator &PDr){
         PDreg = &PDr;
-        arg = t_arg;
     }
 
     virtual void Start(){

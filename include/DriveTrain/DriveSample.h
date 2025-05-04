@@ -30,7 +30,7 @@ protected:
     PDRegulator *PDreg;
     
 public:
-    DriveSample(){}; // для лчереди
+    DriveSample(){}; // для очереди
 
     DriveSample(PDRegulator &PDr){
         PDreg = &PDr;

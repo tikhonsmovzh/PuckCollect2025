@@ -14,6 +14,9 @@
 
 #define BASE_STEP_COUNT 8
 
+#define EXECUTION_LIMIT 40.0
+#define MAX_TIME_ERROR 1.0
+
 //Intake
 #define CLAMP_SERVO_CALMP_POS 0
 #define CLAMP_SERVO_UNCLAMP_POS 20

@@ -6,6 +6,7 @@
 #include "utils/PDRegulator.h"
 #include "utils/Queue.h"
 #include "utils/Sgn.h"
+#include "utils/ElapsedTime.h"
 #include "DriveTrain/DriveSample.h"
 #include "Intake.h"
 
@@ -24,7 +25,7 @@ enum SimpleActions{
 class DriveForwardToTheLimit : public DriveSample{
     float _distance;
 public:
-    DriveForwardToTheLimit(PDRegulator &PDr, float distance) : DriveSample(PDr) {
+    DriveForwardToTheLimit(PDRegulator &PDr, ElapseTime &Time, float distance) : DriveSample(PDr, Time) {
         _distance = distance;
     }
 
@@ -41,7 +42,7 @@ public:
 class TurnToTheWall : public DriveSample{
     float _distance;
 public:
-    TurnToTheWall(PDRegulator &PDr, float distance) : DriveSample(PDr) {
+    TurnToTheWall(PDRegulator &PDr, ElapseTime &Time, float distance) : DriveSample(PDr, Time) {
         _distance = distance;
     }
 
@@ -58,7 +59,7 @@ public:
 class DrivingAlongTheWall : public DriveSample{
     float _distance;
 public:
-    DrivingAlongTheWall(PDRegulator &PDr, float distance) : DriveSample(PDr) {
+    DrivingAlongTheWall(PDRegulator &PDr, ElapseTime &Time, float distance) : DriveSample(PDr, Time) {
         _distance = distance;
     }
     bool Execute() override{
@@ -75,7 +76,7 @@ public:
 class TravelByEncoderValue : public DriveSample{
     float _encPos;
 public:
-    TravelByEncoderValue(PDRegulator &PDr, float encPos) : DriveSample(PDr) {
+    TravelByEncoderValue(PDRegulator &PDr, ElapseTime &Time, float encPos) : DriveSample(PDr, Time) {
         _encPos = encPos;
     }
 
@@ -92,7 +93,7 @@ public:
 class TurnByGlobalCoordinates : public DriveSample{
     float _targetRotate;
 public:
-    TurnByGlobalCoordinates(PDRegulator &PDr, float targetRotate) : DriveSample(PDr) {
+    TurnByGlobalCoordinates(PDRegulator &PDr, ElapseTime &Time, float targetRotate) : DriveSample(PDr, Time) {
         _targetRotate = targetRotate;
     }
     bool Execute() override{
@@ -114,7 +115,7 @@ private:
     float _targetTurn;
     float startCoords;
 public:
-    TurnByLocalCoordinates(PDRegulator &PDr, float targetTurn) : DriveSample(PDr) {
+    TurnByLocalCoordinates(PDRegulator &PDr, ElapseTime &Time, float targetTurn) : DriveSample(PDr, Time) {
         _targetTurn = targetTurn;
     }
     void Start() override{

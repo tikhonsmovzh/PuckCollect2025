@@ -5,6 +5,7 @@
 #include "Configs.h"
 #include "utils/PDRegulator.h"
 #include "utils/Sgn.h"
+#include "utils/ElapsedTime.h"
 
 class DriveSample{
 protected:
@@ -28,20 +29,28 @@ protected:
         encoderReset();
     }
     PDRegulator *PDreg;
+    ElapseTime *TimeReader;
+
     
 public:
     DriveSample(){}; // для очереди
 
-    DriveSample(PDRegulator &PDr){
+    DriveSample(PDRegulator &PDr, ElapseTime &Time){
         PDreg = &PDr;
+        TimeReader = &Time;
     }
 
     virtual void Start(){
         encoderReset();
         PDreg->start();
+        TimeReader->reset();
     }
 
     virtual bool Execute(){
         return true;
+    }
+
+    bool CheckTime(){
+        return (EXECUTION_LIMIT - TimeReader->seconds()) < MAX_TIME_ERROR;
     }
 };

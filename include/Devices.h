@@ -12,11 +12,11 @@
 HardwareWire hardwareWire;
 SoftwareWire softwareWire(2, 3);
 
-DcExpansion dcExpansion2(2, &hardwareWire);
+DcExpansion dcExpansion1(1, &hardwareWire);
 DcExpansion dcExpansion3(3, &hardwareWire);
 
-DcMotor leftMotor(&dcExpansion2, 1);
-DcMotor rightMotor(&dcExpansion2, 2);
+DcMotor leftMotor(&dcExpansion1, 1);
+DcMotor rightMotor(&dcExpansion1, 2);
 
 DcMotor brushMotor(&dcExpansion3, 1);
 DcMotor separatorMotor(&dcExpansion3, 2);
@@ -30,33 +30,33 @@ DistanceSensor rightDistanceSensor(8, 9);
 
 BNO055Gyro gyro(&hardwareWire);
 
-Button startButton(10);
+Button startButton(2);
 
 Servo clampServo;
 Servo brushServoLeft, brushServoRight;
 
 void devicesBegin(){
-    clampServo.attach(11);
+    // clampServo.attach(11);
 
-    brushServoLeft.attach(12);
-    brushServoRight.attach(13);
+    // brushServoLeft.attach(12);
+    // brushServoRight.attach(13);
 
     hardwareWire.begin();
-    softwareWire.begin();
+    // softwareWire.begin();
 
-    dcExpansion2.begin();
+    dcExpansion1.begin();
     dcExpansion3.begin();
 
-    separatorColorSensor.begin();
-    clampColorSenor.begin();
+    // separatorColorSensor.begin();
+    // clampColorSenor.begin();
 
-    forwardDistanceSensor.begin();
-    leftDistanceSensor.begin();
-    rightDistanceSensor.begin();
+    // forwardDistanceSensor.begin();
+    // leftDistanceSensor.begin();
+    // rightDistanceSensor.begin();
 
     startButton.begin();
 
-    gyro.begin();
+    // gyro.begin();
 
     leftMotor.begin();
     brushMotor.begin();

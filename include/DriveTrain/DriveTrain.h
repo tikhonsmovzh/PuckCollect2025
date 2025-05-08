@@ -43,7 +43,7 @@ void driveTrainUpdate(){
         return;
     }
 
-    if (_trajectory.front()->Execute() || (EXECUTION_LIMIT - _Timer.seconds()) > TIME_ERROR){ // прирывание по времени
+    if (_trajectory.front()->Execute() || (EXECUTION_LIMIT - _Timer.seconds()) > TIME_ERROR+6){ // прирывание по времени
         _trajectory.dequeue();
 
         if(!_trajectory.isEmpty()){

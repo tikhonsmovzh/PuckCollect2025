@@ -1,32 +1,37 @@
 #include <Arduino.h>
 #include "Devices.h"
 #include "DriveTrain/DriveTrain.h"
-#include "Intake.h"
+//#include "Intake.h"
 
 void setup() {
   Serial.begin(115200);
 
   devicesBegin();
 
-  while (!startButton.readState());
-  while (startButton.readState());
+  // while (!startButton.readState());
+  // while (startButton.readState());
   
-  intakeBegin();
+  // intakeBegin();
   
-  gyro.reset();
+  // gyro.reset();
 
-  detectFloor();
+  // detectFloor();
 
   driveTrainBegin();
   
   while (!startButton.readState());
   while (startButton.readState());
 
-  intakeStart();
+  delay(1000);
+
+  leftMotor.setPower(0.5);
+  rightMotor.setPower(0.5);
+
+  // intakeStart();
   driveTrainStart();
 }
 
 void loop() {
   driveTrainUpdate();
-  intakeUpdate();
+  // intakeUpdate();
 }

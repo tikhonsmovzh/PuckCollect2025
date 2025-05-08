@@ -6,39 +6,34 @@
 #include "utils/ElapsedTime.h"
 
 Queue<DriveSample*> _trajectory;
+ElapseTime _Timer;
 
 void driveTrainBegin(){
-    PDRegulator _TBLC_PD(0.1f, 0.1f); // надо норм каэфициенты!
-    PDRegulator _TBGC_PD(0.1f, 0.1f); // надо норм каэфициенты!
-    PDRegulator _TBEV_PD(0.1f, 0.1f); // надо норм каэфициенты!
-    PDRegulator _DATW_PD(0.1f, 0.1f); // надо норм каэфициенты!
-    PDRegulator _TTTW_PD(0.1f, 0.1f); // надо норм каэфициенты!
-    PDRegulator _DFTTL_PD(0.1f, 0.1f); // надо норм каэфициенты!
+    PDRegulator MainPDregulator(0.1f, 0.1f); // здесь надо вставить каэфициенты для первого действия (у нас это DriveForwardToTheLimit)
 
-    ElapseTime _Timer();
-
-    _trajectory.enqueue(new DriveForwardToTheLimit(_DFTTL_PD, _Timer, ETALON_DISTANCE));
-    if (IS_GYRO) _trajectory.enqueue(new TurnByGlobalCoordinates(_TBGC_PD, _Timer, 90));
+    _trajectory.enqueue(new DriveForwardToTheLimit(MainPDregulator, ETALON_DISTANCE));
+    if (IS_GYRO) _trajectory.enqueue(new TurnByGlobalCoordinates(MainPDregulator, 90));
     for (int step = 1; step < 4; step++){ //три круга
         for (int actions = 1; actions < 5; actions++){ //в каждом круге полный проезд, из четырех проездов по стене, и четырех поворотов
-            _trajectory.enqueue(new DrivingAlongTheWall(_DATW_PD, _Timer, ETALON_DISTANCE * step));
+            _trajectory.enqueue(new DrivingAlongTheWall(MainPDregulator, ETALON_DISTANCE * step));
             if (IS_GYRO)
-                _trajectory.enqueue(new TurnByGlobalCoordinates(_TBGC_PD, _Timer, chopDegrees(90 + 90 * actions)));
+                _trajectory.enqueue(new TurnByGlobalCoordinates(MainPDregulator, chopDegrees(90 + 90 * actions)));
             else
-                _trajectory.enqueue(new TurnToTheWall(_TTTW_PD, _Timer, ETALON_DISTANCE * step));
+                _trajectory.enqueue(new TurnToTheWall(MainPDregulator, ETALON_DISTANCE * step));
         }
     }
     if (IS_GYRO){
-        _trajectory.enqueue(new TurnByGlobalCoordinates(_TBGC_PD, _Timer, -90));
-        _trajectory.enqueue(new DriveForwardToTheLimit(_DFTTL_PD, _Timer, ETALON_DISTANCE));
-        _trajectory.enqueue(new TurnByGlobalCoordinates(_TBGC_PD, _Timer, -180));
-        _trajectory.enqueue(new DriveForwardToTheLimit(_DFTTL_PD, _Timer, ETALON_DISTANCE));
-        _trajectory.enqueue(new TurnByGlobalCoordinates(_TBGC_PD, _Timer, 0));
+        _trajectory.enqueue(new TurnByGlobalCoordinates(MainPDregulator, -90));
+        _trajectory.enqueue(new DriveForwardToTheLimit(MainPDregulator, ETALON_DISTANCE));
+        _trajectory.enqueue(new TurnByGlobalCoordinates(MainPDregulator, -180));
+        _trajectory.enqueue(new DriveForwardToTheLimit(MainPDregulator, ETALON_DISTANCE));
+        _trajectory.enqueue(new TurnByGlobalCoordinates(MainPDregulator, 0));
     }
     //остается только дописать генерацию рандомной езды (опционально), или есть идея интереснее, но ее позже расскажу
 }
 
 void driveTrainStart(){
+    _Timer.reset();
     if(!_trajectory.isEmpty())
         _trajectory.front()->Start();
 }
@@ -48,10 +43,12 @@ void driveTrainUpdate(){
         return;
     }
 
-    if (_trajectory.front()->Execute() || _trajectory.front()->CheckTime()){ // прирывание по времени
+    if (_trajectory.front()->Execute() || (EXECUTION_LIMIT - _Timer.seconds()) > TIME_ERROR){ // прирывание по времени
         _trajectory.dequeue();
 
-        if(!_trajectory.isEmpty())
+        if(!_trajectory.isEmpty()){
             _trajectory.front()->Start();
+            _trajectory.front()->ResetPd();
+        }
     }
 }

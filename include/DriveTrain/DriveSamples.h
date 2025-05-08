@@ -25,8 +25,10 @@ enum SimpleActions{
 class DriveForwardToTheLimit : public DriveSample{
     float _distance;
 public:
-    DriveForwardToTheLimit(PDRegulator &PDr, ElapseTime &Time, float distance) : DriveSample(PDr, Time) {
+    DriveForwardToTheLimit(PDRegulator &PDr, float distance) : DriveSample(PDr) {
         _distance = distance;
+        kp = 1.0f; // нужны норм каэфициенты!
+        kd = 1.0f;
     }
 
     bool Execute() override{ // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
@@ -42,8 +44,10 @@ public:
 class TurnToTheWall : public DriveSample{
     float _distance;
 public:
-    TurnToTheWall(PDRegulator &PDr, ElapseTime &Time, float distance) : DriveSample(PDr, Time) {
+    TurnToTheWall(PDRegulator &PDr, float distance) : DriveSample(PDr) {
         _distance = distance;
+        kp = 1.0f; // нужны норм каэфициенты!
+        kd = 1.0f;
     }
 
     bool Execute() override{
@@ -59,8 +63,10 @@ public:
 class DrivingAlongTheWall : public DriveSample{
     float _distance;
 public:
-    DrivingAlongTheWall(PDRegulator &PDr, ElapseTime &Time, float distance) : DriveSample(PDr, Time) {
+    DrivingAlongTheWall(PDRegulator &PDr, float distance) : DriveSample(PDr) {
         _distance = distance;
+        kp = 1.0f; // нужны норм каэфициенты!
+        kd = 1.0f;
     }
     bool Execute() override{
         if (forwardDistanceSensor.readDistance() > _distance){
@@ -76,8 +82,10 @@ public:
 class TravelByEncoderValue : public DriveSample{
     float _encPos;
 public:
-    TravelByEncoderValue(PDRegulator &PDr, ElapseTime &Time, float encPos) : DriveSample(PDr, Time) {
+    TravelByEncoderValue(PDRegulator &PDr, float encPos) : DriveSample(PDr) {
         _encPos = encPos;
+        kp = 1.0f; // нужны норм каэфициенты!
+        kd = 1.0f;
     }
 
     bool Execute() override{
@@ -93,8 +101,10 @@ public:
 class TurnByGlobalCoordinates : public DriveSample{
     float _targetRotate;
 public:
-    TurnByGlobalCoordinates(PDRegulator &PDr, ElapseTime &Time, float targetRotate) : DriveSample(PDr, Time) {
+    TurnByGlobalCoordinates(PDRegulator &PDr, float targetRotate) : DriveSample(PDr) {
         _targetRotate = targetRotate;
+        kp = 1.0f; // нужны норм каэфициенты!
+        kd = 1.0f;
     }
     bool Execute() override{
         if (!IS_GYRO) return true; //просто пропустит
@@ -115,8 +125,10 @@ private:
     float _targetTurn;
     float startCoords;
 public:
-    TurnByLocalCoordinates(PDRegulator &PDr, ElapseTime &Time, float targetTurn) : DriveSample(PDr, Time) {
+    TurnByLocalCoordinates(PDRegulator &PDr, float targetTurn) : DriveSample(PDr) {
         _targetTurn = targetTurn;
+        kp = 1.0f; // нужны норм каэфициенты!
+        kd = 1.0f;
     }
     void Start() override{
         DriveSample::Start();

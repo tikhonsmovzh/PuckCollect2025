@@ -30,4 +30,11 @@ public:
     void start(){
         _lastUpdateTime = millis();
     }
+
+    void reset(float kp, float kd){
+        _kp = kp;
+        _kd = kd;
+        start();
+        _oldErr = 0.0f;
+    }
 };

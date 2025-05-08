@@ -29,28 +29,27 @@ protected:
         encoderReset();
     }
     PDRegulator *PDreg;
-    ElapseTime *TimeReader;
 
     
 public:
+    float kp = 1.0f;
+    float kd = 1.0f;
     DriveSample(){}; // для очереди
 
-    DriveSample(PDRegulator &PDr, ElapseTime &Time){
+    DriveSample(PDRegulator &PDr){
         PDreg = &PDr;
-        TimeReader = &Time;
     }
 
     virtual void Start(){
         encoderReset();
         PDreg->start();
-        TimeReader->reset();
     }
 
     virtual bool Execute(){
         return true;
     }
 
-    bool CheckTime(){
-        return (EXECUTION_LIMIT - TimeReader->seconds()) < MAX_TIME_ERROR;
+    void ResetPd(){
+        PDreg->reset(kp, kd);
     }
 };

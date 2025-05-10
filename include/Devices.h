@@ -24,9 +24,9 @@ DcMotor separatorMotor(&dcExpansion3, 2);
 TCS34725ColorSensor separatorColorSensor(&hardwareWire);
 TCS34725ColorSensor clampColorSenor(&softwareWire);
 
-DistanceSensor forwardDistanceSensor(4, 5);
-DistanceSensor leftDistanceSensor(6, 7);
-DistanceSensor rightDistanceSensor(8, 9);
+DistanceSensor forwardDistanceSensor(6, 5); // +
+DistanceSensor leftDistanceSensor(3, 4);    // +
+DistanceSensor rightDistanceSensor(8, 7);   // +
 
 BNO055Gyro gyro(&hardwareWire);
 
@@ -50,9 +50,9 @@ void devicesBegin(){
     // separatorColorSensor.begin();
     // clampColorSenor.begin();
 
-    // forwardDistanceSensor.begin();
-    // leftDistanceSensor.begin();
-    // rightDistanceSensor.begin();
+    forwardDistanceSensor.begin();
+    leftDistanceSensor.begin();
+    rightDistanceSensor.begin();
 
     startButton.begin();
 
